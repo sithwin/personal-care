@@ -1,10 +1,16 @@
 import { Pool } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 import type { ICommandBus } from '../application/ports/ICommandBus';
+import { childLogger } from '../infrastructure/logger';
+
+const log = childLogger('seed');
 
 export async function seed(bus: ICommandBus, pool: Pool): Promise<void> {
   const existing = await pool.query(`SELECT id FROM categories_view WHERE name IN ('Health', 'Study') AND is_default = true`);
-  if (existing.rows.length >= 2) return;
+  if (existing.rows.length >= 2) {
+    log.debug('Seed skipped — built-in categories already exist');
+    return;
+  }
 
   const healthId = uuidv4();
   const studyId = uuidv4();
@@ -27,5 +33,5 @@ export async function seed(bus: ICommandBus, pool: Pool): Promise<void> {
     }
   }
 
-  console.log('Seed complete: Health and Study categories + balance rules created');
+  log.info('Seed complete: Health and Study categories + balance rules created');
 }

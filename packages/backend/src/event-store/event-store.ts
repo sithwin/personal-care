@@ -1,6 +1,9 @@
 import { Pool } from 'pg';
 import { DomainEvent, StoredEvent } from '../types';
 import { IEventStore } from '../application/ports/IEventStore';
+import { childLogger } from '../infrastructure/logger';
+
+const log = childLogger('EventStore');
 
 /**
  * PostgreSQL implementation of IEventStore.
@@ -30,8 +33,11 @@ export class EventStore implements IEventStore {
           stored.push(result.rows[0]);
         } catch (err: unknown) {
           if (err instanceof Error && err.message.includes('unique')) {
-            throw new Error(`Concurrency conflict on aggregate ${e.aggregateId} at version ${version}`);
+            const msg = `Concurrency conflict on aggregate ${e.aggregateId} at version ${version}`;
+            log.warn({ aggregateId: e.aggregateId, version }, msg);
+            throw new Error(msg);
           }
+          log.error({ err, aggregateId: e.aggregateId }, 'Unexpected error appending event');
           throw err;
         }
       }

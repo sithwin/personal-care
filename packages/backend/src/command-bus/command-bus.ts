@@ -1,5 +1,8 @@
 import { IEventStore } from '../application/ports/IEventStore';
 import { ICommandBus } from '../application/ports/ICommandBus';
+import { childLogger } from '../infrastructure/logger';
+
+const log = childLogger('CommandBus');
 import { DomainEvent, StoredEvent } from '../types';
 import { handleCategoryCommand } from '../domain/category/aggregate';
 import { handleItemCommand } from '../domain/item/aggregate';
@@ -110,16 +113,24 @@ export class CommandBus implements ICommandBus {
   async dispatch(command: { type: string; payload: Record<string, unknown> }): Promise<StoredEvent[]> {
     const registration = this.registry.get(command.type);
     if (!registration) {
+      log.warn({ commandType: command.type }, 'No handler registered for command');
       throw new Error(`No handler registered for command: ${command.type}`);
     }
 
     const anyCommand = command as unknown as AnyCommand;
     const aggregateId = registration.getAggregateId(anyCommand);
+    log.debug({ commandType: command.type, aggregateId }, 'Dispatching command');
+
     const history = await this.eventStore.getEvents(aggregateId);
     const expectedVersion = history.length > 0 ? history[history.length - 1].version : 0;
 
     const newEvents = registration.handler(anyCommand, history);
     const stored = await this.eventStore.append(newEvents, expectedVersion);
+
+    log.info(
+      { commandType: command.type, aggregateId, eventCount: stored.length, events: stored.map(e => e.eventType) },
+      'Command dispatched',
+    );
 
     await this.onEventsStored?.(stored);
 
