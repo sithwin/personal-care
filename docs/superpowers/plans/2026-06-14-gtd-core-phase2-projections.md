@@ -920,3 +920,15 @@ git commit -m "feat: projector runner wired into command bus — synchronous pro
 **Phase 2 complete.** All 8 projectors implemented. Every command now automatically updates read-model tables synchronously. Task status is always derived correctly from item availability and task state.
 
 Next: `2026-06-14-gtd-core-phase3-api-seed.md` — Express API routes, seed data, and backend entry point.
+
+---
+
+## Completion Summary
+
+- **Date completed:** 2026-06-15
+- **Total tasks:** 5 (Tasks 9–13)
+- **Total tests:** 35 passing (28 carried from Phase 1 + 7 new projection integration tests)
+- **Deviations from plan:**
+  - DB migration run via `psql` directly instead of `ts-node --esm` (avoids CommonJS/ESM conflict).
+  - Test UUIDs changed from simple strings (`'cat-1'`, `'task-1'`) to valid UUID format (`'00000000-0000-0000-0000-000000000001'`) because projection tables use `UUID` typed columns.
+  - Added `--fileParallelism=false` to vitest (both CLI and `package.json`) because projection tests share a PostgreSQL database and parallel execution caused TRUNCATE/INSERT races between test files.
