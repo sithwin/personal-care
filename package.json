@@ -1,0 +1,10 @@
+﻿{
+  "name": "personal-care",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=packages/backend",
+    "dev:frontend": "npm run dev --workspace=packages/frontend",
+    "test": "npm run test --workspaces"
+  }
+}
