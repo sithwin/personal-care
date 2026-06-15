@@ -1,5 +1,5 @@
-import { type Pool } from 'pg';
-import { type StoredEvent } from '../types';
+import type { Pool } from 'pg';
+import type { Projector } from '../../application/ports/IProjector';
 
 function getPeriodBounds(frequency: string, dayRestriction: string | null): { start: Date; end: Date } | null {
   const now = new Date();
@@ -58,37 +58,39 @@ async function refreshBalanceStatus(pool: Pool): Promise<void> {
   }
 }
 
-export async function balanceProjector(event: StoredEvent, pool: Pool): Promise<void> {
-  const p = event.payload as Record<string, unknown>;
-  switch (event.eventType) {
-    case 'BalanceRuleCreated':
-      await pool.query(
-        `INSERT INTO balance_rules_view (id, category_id, minimum_count, frequency, day_restriction)
-         VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING`,
-        [p.id, p.categoryId, p.minimumCount, p.frequency, p.dayRestriction ?? null]
-      );
-      await refreshBalanceStatus(pool);
-      break;
-    case 'BalanceRuleUpdated':
-      await pool.query(
-        `UPDATE balance_rules_view SET
-         minimum_count = COALESCE($1, minimum_count),
-         frequency = COALESCE($2, frequency),
-         day_restriction = COALESCE($3, day_restriction)
-         WHERE id = $4`,
-        [p.minimumCount ?? null, p.frequency ?? null, p.dayRestriction ?? null, p.id]
-      );
-      await refreshBalanceStatus(pool);
-      break;
-    case 'BalanceRuleDeleted':
-      await pool.query('DELETE FROM balance_rules_view WHERE id = $1', [p.id]);
-      await pool.query('DELETE FROM balance_status_view WHERE rule_id = $1', [p.id]);
-      break;
-    case 'TaskCompleted':
-      await refreshBalanceStatus(pool);
-      break;
+export function createBalanceProjector(pool: Pool): Projector {
+  return async (event) => {
+    const p = event.payload as Record<string, unknown>;
+    switch (event.eventType) {
+      case 'BalanceRuleCreated':
+        await pool.query(
+          `INSERT INTO balance_rules_view (id, category_id, minimum_count, frequency, day_restriction)
+           VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING`,
+          [p.id, p.categoryId, p.minimumCount, p.frequency, p.dayRestriction ?? null]
+        );
+        await refreshBalanceStatus(pool);
+        break;
+      case 'BalanceRuleUpdated':
+        await pool.query(
+          `UPDATE balance_rules_view SET
+           minimum_count = COALESCE($1, minimum_count),
+           frequency = COALESCE($2, frequency),
+           day_restriction = COALESCE($3, day_restriction)
+           WHERE id = $4`,
+          [p.minimumCount ?? null, p.frequency ?? null, p.dayRestriction ?? null, p.id]
+        );
+        await refreshBalanceStatus(pool);
+        break;
+      case 'BalanceRuleDeleted':
+        await pool.query('DELETE FROM balance_rules_view WHERE id = $1', [p.id]);
+        await pool.query('DELETE FROM balance_status_view WHERE rule_id = $1', [p.id]);
+        break;
+      case 'TaskCompleted':
+        await refreshBalanceStatus(pool);
+        break;
 
-    default:
-      break;
-  }
+      default:
+        break;
+    }
+  };
 }

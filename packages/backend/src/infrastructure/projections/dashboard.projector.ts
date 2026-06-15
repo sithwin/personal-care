@@ -1,5 +1,5 @@
-import { type Pool } from 'pg';
-import { type StoredEvent } from '../types';
+import type { Pool } from 'pg';
+import type { Projector } from '../../application/ports/IProjector';
 
 const TASK_EVENTS = new Set(['TaskCreated', 'TaskStarted', 'TaskCompleted', 'TaskRescheduled', 'ItemRequirementAdded', 'TaskRecurrenceSet', 'RecurrenceSkipped']);
 const ITEM_EVENTS = new Set(['ItemCreated', 'ItemMarkedAvailable', 'ItemMarkedConsumed', 'ItemMarkedAvailableAgain']);
@@ -17,8 +17,10 @@ async function refreshDashboard(pool: Pool): Promise<void> {
   `);
 }
 
-export async function dashboardProjector(event: StoredEvent, pool: Pool): Promise<void> {
-  if (TASK_EVENTS.has(event.eventType) || ITEM_EVENTS.has(event.eventType)) {
-    await refreshDashboard(pool);
-  }
+export function createDashboardProjector(pool: Pool): Projector {
+  return async (event) => {
+    if (TASK_EVENTS.has(event.eventType) || ITEM_EVENTS.has(event.eventType)) {
+      await refreshDashboard(pool);
+    }
+  };
 }

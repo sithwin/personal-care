@@ -1,7 +1,14 @@
-import { type Pool } from 'pg';
+import type { Pool } from 'pg';
 import { EventStore } from '../event-store/event-store';
 import { CommandBus } from '../command-bus/command-bus';
-import { runProjectors } from '../projections/runner';
+import { createCategoriesProjector } from './projections/categories.projector';
+import { createItemsProjector } from './projections/items.projector';
+import { createTasksProjector } from './projections/tasks.projector';
+import { createProjectsProjector } from './projections/projects.projector';
+import { createResourcesProjector } from './projections/resources.projector';
+import { createBalanceProjector } from './projections/balance.projector';
+import { createDashboardProjector } from './projections/dashboard.projector';
+import { createProjectorRunner } from './projections/runner';
 import { PgTaskQueryService } from './queries/PgTaskQueryService';
 import { PgItemQueryService } from './queries/PgItemQueryService';
 import { PgCategoryQueryService } from './queries/PgCategoryQueryService';
@@ -36,7 +43,18 @@ export interface AppDependencies {
 
 export function buildDependencies(pool: Pool): AppDependencies {
   const eventStore = new EventStore(pool);
-  const commandBus = new CommandBus(eventStore, async (events) => runProjectors(events, pool));
+
+  const runProjectors = createProjectorRunner([
+    createCategoriesProjector(pool),
+    createItemsProjector(pool),
+    createTasksProjector(pool),
+    createProjectsProjector(pool),
+    createResourcesProjector(pool),
+    createBalanceProjector(pool),
+    createDashboardProjector(pool),
+  ]);
+
+  const commandBus = new CommandBus(eventStore, runProjectors);
 
   return {
     eventStore,
