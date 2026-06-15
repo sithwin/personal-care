@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "personal-care",
   "private": true,
   "workspaces": ["packages/*"],

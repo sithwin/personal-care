@@ -2,7 +2,7 @@
   "name": "@personal-care/mcp",
   "version": "1.0.0",
   "scripts": {
-    "dev": "ts-node --esm src/index.ts",
+    "dev": "ts-node src/index.ts",
     "build": "tsc"
   },
   "dependencies": {

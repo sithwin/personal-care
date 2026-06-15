@@ -2,9 +2,9 @@
   "name": "@personal-care/backend",
   "version": "1.0.0",
   "scripts": {
-    "dev": "ts-node --esm src/index.ts",
+    "dev": "ts-node src/index.ts",
     "test": "vitest run",
-    "migrate": "ts-node --esm src/db/migrate.ts"
+    "migrate": "ts-node src/db/migrate.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
