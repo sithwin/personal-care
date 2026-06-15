@@ -1,61 +1,127 @@
-import { EventStore } from '../event-store/event-store';
-import { StoredEvent } from '../types';
-import { Pool } from 'pg';
-import { runProjectors } from '../projections/runner';
+import { IEventStore } from '../application/ports/IEventStore';
+import { ICommandBus } from '../application/ports/ICommandBus';
+import { DomainEvent, StoredEvent } from '../types';
 import { handleCategoryCommand } from '../domain/category/aggregate';
 import { handleItemCommand } from '../domain/item/aggregate';
 import { handleTaskCommand } from '../domain/task/aggregate';
 import { handleProjectCommand } from '../domain/project/aggregate';
 import { handleResourceCommand } from '../domain/resource/aggregate';
 import { handleBalanceRuleCommand } from '../domain/balance-rule/aggregate';
+import type { CategoryCommand } from '../domain/category/types';
+import type { ItemCommand } from '../domain/item/types';
+import type { TaskCommand } from '../domain/task/types';
+import type { ProjectCommand } from '../domain/project/types';
+import type { ResourceCommand } from '../domain/resource/types';
+import type { BalanceRuleCommand } from '../domain/balance-rule/types';
 
-type AnyCommand = Parameters<typeof handleCategoryCommand>[0]
-  | Parameters<typeof handleItemCommand>[0]
-  | Parameters<typeof handleTaskCommand>[0]
-  | Parameters<typeof handleProjectCommand>[0]
-  | Parameters<typeof handleResourceCommand>[0]
-  | Parameters<typeof handleBalanceRuleCommand>[0];
+type AnyCommand =
+  | CategoryCommand
+  | ItemCommand
+  | TaskCommand
+  | ProjectCommand
+  | ResourceCommand
+  | BalanceRuleCommand;
 
-const CATEGORY_COMMANDS = new Set(['CreateCategory', 'UpdateCategory', 'DeleteCategory']);
-const ITEM_COMMANDS = new Set(['CreateItem', 'MarkItemAvailable', 'MarkItemConsumed', 'MarkItemAvailableAgain']);
-const TASK_COMMANDS = new Set(['CreateTask', 'StartTask', 'CompleteTask', 'PromoteToProject', 'AddItemRequirement', 'AttachResourceToTask', 'DetachResourceFromTask', 'SetTaskRecurrence', 'SkipRecurrence', 'ScheduleTask']);
-const PROJECT_COMMANDS = new Set(['CreateProject', 'AddTaskToProject', 'CompleteProject']);
-const RESOURCE_COMMANDS = new Set(['CreateResource', 'UpdateResource', 'DeleteResource']);
-const BALANCE_RULE_COMMANDS = new Set(['CreateBalanceRule', 'UpdateBalanceRule', 'DeleteBalanceRule']);
+type CommandHandler<TCmd extends AnyCommand> = (
+  command: TCmd,
+  history: StoredEvent[],
+) => DomainEvent[];
 
-function getAggregateId(command: AnyCommand): string {
-  const p = command.payload as Record<string, string>;
-  return p.id ?? p.taskId ?? p.projectId ?? p.resourceId;
+interface CommandRegistration {
+  handler: (command: AnyCommand, history: StoredEvent[]) => DomainEvent[];
+  getAggregateId: (command: AnyCommand) => string;
 }
 
-export class CommandBus {
-  constructor(private eventStore: EventStore, private pool: Pool) {}
+/**
+ * Routes commands to their aggregate handler via a registry.
+ * Adding a new aggregate requires only a new register() call — no edits here. (OCP)
+ * Depends on IEventStore (not pg.Pool) so the application layer stays infra-free. (DIP)
+ * Post-persist side effects (projections, emails, etc.) are handled by the injected
+ * onEventsStored callback — decoupling CommandBus from all knowledge of projectors. (SRP)
+ */
+export class CommandBus implements ICommandBus {
+  private readonly registry = new Map<string, CommandRegistration>();
+
+  constructor(
+    private readonly eventStore: IEventStore,
+    private readonly onEventsStored?: (events: StoredEvent[]) => Promise<void>,
+  ) {
+    this.registerAggregate(handleCategoryCommand, {
+      CreateCategory:  (c) => (c.payload as { id: string }).id,
+      UpdateCategory:  (c) => (c.payload as { id: string }).id,
+      DeleteCategory:  (c) => (c.payload as { id: string }).id,
+    });
+
+    this.registerAggregate(handleItemCommand, {
+      CreateItem:          (c) => (c.payload as { id: string }).id,
+      MarkItemAvailable:   (c) => (c.payload as { id: string }).id,
+      MarkItemConsumed:    (c) => (c.payload as { id: string }).id,
+      MarkItemAvailableAgain: (c) => (c.payload as { id: string }).id,
+    });
+
+    this.registerAggregate(handleTaskCommand, {
+      CreateTask:            (c) => (c.payload as { id: string }).id,
+      StartTask:             (c) => (c.payload as { id: string }).id,
+      CompleteTask:          (c) => (c.payload as { id: string }).id,
+      SetTaskRecurrence:     (c) => (c.payload as { id: string }).id,
+      SkipRecurrence:        (c) => (c.payload as { id: string }).id,
+      ScheduleTask:          (c) => (c.payload as { id: string }).id,
+      AddItemRequirement:    (c) => (c.payload as { taskId: string }).taskId,
+      AttachResourceToTask:  (c) => (c.payload as { taskId: string }).taskId,
+      DetachResourceFromTask:(c) => (c.payload as { taskId: string }).taskId,
+      PromoteToProject:      (c) => (c.payload as { taskId: string }).taskId,
+    });
+
+    this.registerAggregate(handleProjectCommand, {
+      CreateProject:    (c) => (c.payload as { id: string }).id,
+      CompleteProject:  (c) => (c.payload as { id: string }).id,
+      AddTaskToProject: (c) => (c.payload as { projectId: string }).projectId,
+    });
+
+    this.registerAggregate(handleResourceCommand, {
+      CreateResource: (c) => (c.payload as { id: string }).id,
+      UpdateResource: (c) => (c.payload as { id: string }).id,
+      DeleteResource: (c) => (c.payload as { id: string }).id,
+    });
+
+    this.registerAggregate(handleBalanceRuleCommand, {
+      CreateBalanceRule: (c) => (c.payload as { id: string }).id,
+      UpdateBalanceRule: (c) => (c.payload as { id: string }).id,
+      DeleteBalanceRule: (c) => (c.payload as { id: string }).id,
+    });
+  }
+
+  /**
+   * Register a set of command types that share the same aggregate handler.
+   * Each entry maps a command type string to its aggregate-ID extractor.
+   */
+  private registerAggregate<TCmd extends AnyCommand>(
+    handler: (command: TCmd, history: StoredEvent[]) => DomainEvent[],
+    idExtractors: Record<string, (command: AnyCommand) => string>,
+  ): void {
+    for (const [commandType, getAggregateId] of Object.entries(idExtractors)) {
+      this.registry.set(commandType, {
+        handler: handler as CommandRegistration['handler'],
+        getAggregateId,
+      });
+    }
+  }
 
   async dispatch(command: AnyCommand): Promise<StoredEvent[]> {
-    const aggregateId = getAggregateId(command);
+    const registration = this.registry.get(command.type);
+    if (!registration) {
+      throw new Error(`No handler registered for command: ${command.type}`);
+    }
+
+    const aggregateId = registration.getAggregateId(command);
     const history = await this.eventStore.getEvents(aggregateId);
     const expectedVersion = history.length > 0 ? history[history.length - 1].version : 0;
 
-    let newEvents: ReturnType<typeof handleCategoryCommand>;
+    const newEvents = registration.handler(command, history);
+    const stored = await this.eventStore.append(newEvents, expectedVersion);
 
-    if (CATEGORY_COMMANDS.has(command.type)) {
-      newEvents = handleCategoryCommand(command as Parameters<typeof handleCategoryCommand>[0], history);
-    } else if (ITEM_COMMANDS.has(command.type)) {
-      newEvents = handleItemCommand(command as Parameters<typeof handleItemCommand>[0], history);
-    } else if (TASK_COMMANDS.has(command.type)) {
-      newEvents = handleTaskCommand(command as Parameters<typeof handleTaskCommand>[0], history);
-    } else if (PROJECT_COMMANDS.has(command.type)) {
-      newEvents = handleProjectCommand(command as Parameters<typeof handleProjectCommand>[0], history);
-    } else if (RESOURCE_COMMANDS.has(command.type)) {
-      newEvents = handleResourceCommand(command as Parameters<typeof handleResourceCommand>[0], history);
-    } else if (BALANCE_RULE_COMMANDS.has(command.type)) {
-      newEvents = handleBalanceRuleCommand(command as Parameters<typeof handleBalanceRuleCommand>[0], history);
-    } else {
-      throw new Error(`Unknown command type: ${(command as { type: string }).type}`);
-    }
+    await this.onEventsStored?.(stored);
 
-    const stored = await this.eventStore.append(newEvents as Parameters<typeof this.eventStore.append>[0], expectedVersion);
-    await runProjectors(stored, this.pool);
     return stored;
   }
 }
