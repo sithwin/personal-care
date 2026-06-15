@@ -17,7 +17,7 @@ export class EventStore {
           const result = await client.query<StoredEvent>(
             `INSERT INTO events (aggregate_id, aggregate_type, event_type, payload, version)
              VALUES ($1, $2, $3, $4, $5)
-             RETURNING id, aggregate_id as "aggregateId", aggregate_type as "aggregateType",
+             RETURNING id::INT, aggregate_id as "aggregateId", aggregate_type as "aggregateType",
                        event_type as "eventType", payload, version, created_at as "createdAt"`,
             [e.aggregateId, e.aggregateType, e.eventType, JSON.stringify(e.payload), version]
           );
@@ -41,7 +41,7 @@ export class EventStore {
 
   async getEvents(aggregateId: string): Promise<StoredEvent[]> {
     const result = await this.pool.query<StoredEvent>(
-      `SELECT id, aggregate_id as "aggregateId", aggregate_type as "aggregateType",
+      `SELECT id::INT, aggregate_id as "aggregateId", aggregate_type as "aggregateType",
               event_type as "eventType", payload, version, created_at as "createdAt"
        FROM events WHERE aggregate_id = $1 ORDER BY version ASC`,
       [aggregateId]
@@ -51,7 +51,7 @@ export class EventStore {
 
   async getAllEventsSince(afterId: number): Promise<StoredEvent[]> {
     const result = await this.pool.query<StoredEvent>(
-      `SELECT id, aggregate_id as "aggregateId", aggregate_type as "aggregateType",
+      `SELECT id::INT, aggregate_id as "aggregateId", aggregate_type as "aggregateType",
               event_type as "eventType", payload, version, created_at as "createdAt"
        FROM events WHERE id > $1 ORDER BY id ASC`,
       [afterId]
