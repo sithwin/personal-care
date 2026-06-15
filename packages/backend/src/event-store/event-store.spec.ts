@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { EventStore } from '../../src/event-store/event-store';
+import { EventStore } from './event-store';
 import { Pool } from 'pg';
 
 let pool: Pool;

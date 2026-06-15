@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { Pool } from 'pg';
-import { itemsProjector } from '../../src/projections/items.projector';
-import { tasksProjector } from '../../src/projections/tasks.projector';
+import { itemsProjector } from './items.projector';
+import { tasksProjector } from './tasks.projector';
 
 const CAT_ID  = '00000000-0000-0000-0000-000000000001';
 const TASK_ID = '00000000-0000-0000-0000-000000000002';

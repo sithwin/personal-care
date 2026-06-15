@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { handleTaskCommand } from '../../src/domain/task/aggregate';
+import { handleTaskCommand } from './aggregate';
 
 const baseHistory = [{ eventType: 'TaskCreated', payload: { id: 'task-1', name: 'Oil change', categoryId: 'cat-cars' } }];
 

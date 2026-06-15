@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { handleCategoryCommand } from '../../src/domain/category/aggregate';
+import { handleCategoryCommand } from './aggregate';
 
 describe('Category aggregate', () => {
   it('CreateCategory emits CategoryCreated', () => {

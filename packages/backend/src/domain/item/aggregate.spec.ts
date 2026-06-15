@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { handleItemCommand } from '../../src/domain/item/aggregate';
+import { handleItemCommand } from './aggregate';
 
 const created = [{ eventType: 'ItemCreated', payload: { id: 'item-1', name: 'Solar light', categoryId: 'cat-1', status: 'to_buy' } }];
 

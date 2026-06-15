@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { handleProjectCommand } from '../../src/domain/project/aggregate';
+import { handleProjectCommand } from './aggregate';
 
 describe('Project aggregate', () => {
   it('CreateProject emits ProjectCreated', () => {

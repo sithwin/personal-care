@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { handleResourceCommand } from '../../src/domain/resource/aggregate';
+import { handleResourceCommand } from './aggregate';
 
 describe('Resource aggregate', () => {
   it('CreateResource emits ResourceCreated', () => {

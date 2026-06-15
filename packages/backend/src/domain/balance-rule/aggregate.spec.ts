@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { handleBalanceRuleCommand } from '../../src/domain/balance-rule/aggregate';
+import { handleBalanceRuleCommand } from './aggregate';
 
 describe('BalanceRule aggregate', () => {
   it('CreateBalanceRule emits BalanceRuleCreated', () => {
