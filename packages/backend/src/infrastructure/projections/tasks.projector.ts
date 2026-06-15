@@ -1,100 +1,75 @@
-import type { Pool } from 'pg';
 import type { Projector } from '../../application/ports/IProjector';
+import type { ITaskViewRepository } from '../../application/ports/ITaskViewRepository';
+import type { IItemViewRepository } from '../../application/ports/IItemViewRepository';
+import { deriveTaskStatus } from '../../application/services/task-status';
 
-async function deriveAndUpdateStatus(taskId: string, pool: Pool): Promise<void> {
-  const taskRes = await pool.query('SELECT started_at, completed_at, due_date, recurrence_rule FROM tasks_view WHERE id = $1', [taskId]);
-  if (taskRes.rows.length === 0) return;
-  const task = taskRes.rows[0];
-
-  const itemsRes = await pool.query('SELECT item_status FROM task_items_view WHERE task_id = $1', [taskId]);
-  const hasPendingItems = itemsRes.rows.some((r: { item_status: string }) => r.item_status === 'to_buy');
-
-  let status: string;
-  if (task.completed_at && !task.recurrence_rule) {
-    status = 'done';
-  } else if (task.started_at && !task.completed_at) {
-    status = 'ongoing';
-  } else if (hasPendingItems) {
-    status = 'pending';
-  } else if (task.due_date && new Date(task.due_date) > new Date()) {
-    status = 'planned';
-  } else {
-    status = 'ready';
-  }
-
-  await pool.query('UPDATE tasks_view SET status = $1 WHERE id = $2', [status, taskId]);
+async function refreshTaskStatus(taskId: string, taskRepo: ITaskViewRepository): Promise<void> {
+  const task = await taskRepo.findById(taskId);
+  if (!task) return;
+  const itemStatuses = await taskRepo.getItemStatusesForTask(taskId);
+  await taskRepo.updateStatus(taskId, deriveTaskStatus(task, itemStatuses));
 }
 
-export function createTasksProjector(pool: Pool): Projector {
+export function createTasksProjector(taskRepo: ITaskViewRepository, itemRepo: IItemViewRepository): Projector {
   return async (event) => {
     const p = event.payload as Record<string, unknown>;
     switch (event.eventType) {
       case 'TaskCreated': {
         const dur = p.estimatedDuration as { value: number; unit: string } | undefined;
-        await pool.query(
-          `INSERT INTO tasks_view (id, name, description, category_id, project_id, due_date,
-            estimated_duration_value, estimated_duration_unit, status)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'ready')
-           ON CONFLICT (id) DO NOTHING`,
-          [p.id, p.name, p.description ?? null, p.categoryId, p.projectId ?? null,
-           p.dueDate ?? null, dur?.value ?? null, dur?.unit ?? null]
-        );
-        await deriveAndUpdateStatus(p.id as string, pool);
+        await taskRepo.insert({
+          id: p.id as string,
+          name: p.name as string,
+          description: (p.description as string | undefined) ?? null,
+          categoryId: p.categoryId as string,
+          projectId: (p.projectId as string | undefined) ?? null,
+          dueDate: (p.dueDate as string | undefined) ?? null,
+          estimatedDurationValue: dur?.value ?? null,
+          estimatedDurationUnit: dur?.unit ?? null,
+        });
+        await refreshTaskStatus(p.id as string, taskRepo);
         break;
       }
+
       case 'TaskStarted':
-        await pool.query('UPDATE tasks_view SET started_at = NOW() WHERE id = $1', [p.id]);
-        await deriveAndUpdateStatus(p.id as string, pool);
+        await taskRepo.markStarted(p.id as string);
+        await refreshTaskStatus(p.id as string, taskRepo);
         break;
 
       case 'TaskCompleted':
-        await pool.query('UPDATE tasks_view SET completed_at = NOW() WHERE id = $1', [p.id]);
-        await deriveAndUpdateStatus(p.id as string, pool);
+        await taskRepo.markCompleted(p.id as string);
+        await refreshTaskStatus(p.id as string, taskRepo);
         break;
 
       case 'TaskRescheduled':
-        await pool.query(
-          `UPDATE tasks_view SET started_at = NULL, completed_at = NULL,
-           due_date = $1, completion_count = completion_count + 1 WHERE id = $2`,
-          [p.nextDueDate, p.id]
-        );
-        await deriveAndUpdateStatus(p.id as string, pool);
+        await taskRepo.reschedule(p.id as string, p.nextDueDate as string);
+        await refreshTaskStatus(p.id as string, taskRepo);
         break;
 
       case 'ItemRequirementAdded': {
-        const itemRes = await pool.query('SELECT status FROM items_view WHERE id = $1', [p.itemId]);
-        const itemStatus = itemRes.rows[0]?.status ?? 'to_buy';
-        await pool.query(
-          `INSERT INTO task_items_view (task_id, item_id, consumable, item_status)
-           VALUES ($1,$2,$3,$4) ON CONFLICT (task_id, item_id) DO NOTHING`,
-          [p.taskId, p.itemId, p.consumable, itemStatus]
+        const itemStatus = (await itemRepo.findStatus(p.itemId as string)) ?? 'to_buy';
+        await taskRepo.insertItemRequirement(
+          p.taskId as string, p.itemId as string, p.consumable as boolean, itemStatus
         );
-        await deriveAndUpdateStatus(p.taskId as string, pool);
+        await refreshTaskStatus(p.taskId as string, taskRepo);
         break;
       }
 
       case 'TaskScheduled':
-        await pool.query(
-          'UPDATE tasks_view SET scheduled_date = $1, scheduled_start_time = $2 WHERE id = $3',
-          [p.scheduledDate, p.scheduledStartTime, p.id]
-        );
+        await taskRepo.setSchedule(p.id as string, p.scheduledDate as string, p.scheduledStartTime as string);
         break;
 
       case 'TaskRecurrenceSet':
-        await pool.query(
-          'UPDATE tasks_view SET recurrence_rule = $1, due_date = COALESCE($2, due_date) WHERE id = $3',
-          [JSON.stringify(p.recurrenceRule), p.dueDate ?? null, p.id]
-        );
-        await deriveAndUpdateStatus(p.id as string, pool);
+        await taskRepo.setRecurrence(p.id as string, p.recurrenceRule, (p.dueDate as string | undefined) ?? null);
+        await refreshTaskStatus(p.id as string, taskRepo);
         break;
 
       case 'RecurrenceSkipped':
-        await pool.query('UPDATE tasks_view SET due_date = $1 WHERE id = $2', [p.nextDueDate, p.id]);
-        await deriveAndUpdateStatus(p.id as string, pool);
+        await taskRepo.setDueDate(p.id as string, p.nextDueDate as string);
+        await refreshTaskStatus(p.id as string, taskRepo);
         break;
 
       case 'TaskPromotedToProject':
-        await pool.query('UPDATE tasks_view SET project_id = $1 WHERE id = $2', [p.projectId, p.taskId]);
+        await taskRepo.setProjectId(p.taskId as string, p.projectId as string);
         break;
 
       default:

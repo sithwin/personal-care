@@ -9,6 +9,13 @@ import { createResourcesProjector } from './projections/resources.projector';
 import { createBalanceProjector } from './projections/balance.projector';
 import { createDashboardProjector } from './projections/dashboard.projector';
 import { createProjectorRunner } from './projections/runner';
+import { PgTaskViewRepository } from './persistence/views/PgTaskViewRepository';
+import { PgItemViewRepository } from './persistence/views/PgItemViewRepository';
+import { PgCategoryViewRepository } from './persistence/views/PgCategoryViewRepository';
+import { PgProjectViewRepository } from './persistence/views/PgProjectViewRepository';
+import { PgResourceViewRepository } from './persistence/views/PgResourceViewRepository';
+import { PgBalanceViewRepository } from './persistence/views/PgBalanceViewRepository';
+import { PgDashboardViewRepository } from './persistence/views/PgDashboardViewRepository';
 import { PgTaskQueryService } from './queries/PgTaskQueryService';
 import { PgItemQueryService } from './queries/PgItemQueryService';
 import { PgCategoryQueryService } from './queries/PgCategoryQueryService';
@@ -44,14 +51,22 @@ export interface AppDependencies {
 export function buildDependencies(pool: Pool): AppDependencies {
   const eventStore = new EventStore(pool);
 
+  const taskViewRepo = new PgTaskViewRepository(pool);
+  const itemViewRepo = new PgItemViewRepository(pool);
+  const categoryViewRepo = new PgCategoryViewRepository(pool);
+  const projectViewRepo = new PgProjectViewRepository(pool);
+  const resourceViewRepo = new PgResourceViewRepository(pool);
+  const balanceViewRepo = new PgBalanceViewRepository(pool);
+  const dashboardViewRepo = new PgDashboardViewRepository(pool);
+
   const runProjectors = createProjectorRunner([
-    createCategoriesProjector(pool),
-    createItemsProjector(pool),
-    createTasksProjector(pool),
-    createProjectsProjector(pool),
-    createResourcesProjector(pool),
-    createBalanceProjector(pool),
-    createDashboardProjector(pool),
+    createCategoriesProjector(categoryViewRepo),
+    createItemsProjector(itemViewRepo, taskViewRepo),
+    createTasksProjector(taskViewRepo, itemViewRepo),
+    createProjectsProjector(projectViewRepo),
+    createResourcesProjector(resourceViewRepo),
+    createBalanceProjector(balanceViewRepo),
+    createDashboardProjector(dashboardViewRepo),
   ]);
 
   const commandBus = new CommandBus(eventStore, runProjectors);

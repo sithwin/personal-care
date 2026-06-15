@@ -2,6 +2,8 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { Pool } from 'pg';
 import { createItemsProjector } from './items.projector';
 import { createTasksProjector } from './tasks.projector';
+import { PgTaskViewRepository } from '../persistence/views/PgTaskViewRepository';
+import { PgItemViewRepository } from '../persistence/views/PgItemViewRepository';
 
 const CAT_ID  = '00000000-0000-0000-0000-000000000001';
 const TASK_ID = '00000000-0000-0000-0000-000000000002';
@@ -13,8 +15,10 @@ let tasksProjector: ReturnType<typeof createTasksProjector>;
 
 beforeAll(async () => {
   pool = new Pool({ connectionString: process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/personal_care' });
-  itemsProjector = createItemsProjector(pool);
-  tasksProjector = createTasksProjector(pool);
+  const taskRepo = new PgTaskViewRepository(pool);
+  const itemRepo = new PgItemViewRepository(pool);
+  itemsProjector = createItemsProjector(itemRepo, taskRepo);
+  tasksProjector = createTasksProjector(taskRepo, itemRepo);
 });
 afterAll(async () => { await pool.end(); });
 beforeEach(async () => {

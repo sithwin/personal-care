@@ -1,5 +1,5 @@
-import type { Pool } from 'pg';
 import type { Projector } from '../../application/ports/IProjector';
+import type { IBalanceViewRepository, BalanceRuleRow } from '../../application/ports/IBalanceViewRepository';
 
 function getPeriodBounds(frequency: string, dayRestriction: string | null): { start: Date; end: Date } | null {
   const now = new Date();
@@ -25,68 +25,69 @@ function getPeriodBounds(frequency: string, dayRestriction: string | null): { st
   return null;
 }
 
-async function refreshBalanceStatus(pool: Pool): Promise<void> {
-  const rules = await pool.query('SELECT * FROM balance_rules_view');
-  for (const rule of rules.rows) {
-    const bounds = getPeriodBounds(rule.frequency, rule.day_restriction);
+async function refreshBalanceStatus(balanceRepo: IBalanceViewRepository): Promise<void> {
+  const rules = await balanceRepo.getAllRules();
+  for (const rule of rules) {
+    const bounds = getPeriodBounds(rule.frequency, rule.dayRestriction);
+    const now = new Date();
     if (!bounds) {
-      await pool.query(
-        `INSERT INTO balance_status_view (rule_id, category_id, frequency, target_count, actual_count, is_met, period_start, period_end)
-         VALUES ($1,$2,$3,$4,0,false,NOW(),NOW())
-         ON CONFLICT (rule_id) DO UPDATE SET actual_count=0, is_met=false`,
-        [rule.id, rule.category_id, rule.frequency, rule.minimum_count]
-      );
+      await balanceRepo.upsertStatus({
+        ruleId: rule.id,
+        categoryId: rule.categoryId,
+        frequency: rule.frequency,
+        targetCount: rule.minimumCount,
+        actualCount: 0,
+        isMet: false,
+        periodStart: now,
+        periodEnd: now,
+      });
       continue;
     }
-    const countRes = await pool.query(
-      `SELECT COUNT(*) FROM events
-       WHERE event_type = 'TaskCompleted'
-         AND created_at BETWEEN $1 AND $2
-         AND payload->>'id' IN (
-           SELECT id::text FROM tasks_view WHERE category_id = $3
-         )`,
-      [bounds.start, bounds.end, rule.category_id]
-    );
-    const actual = parseInt(countRes.rows[0].count, 10);
-    await pool.query(
-      `INSERT INTO balance_status_view (rule_id, category_id, frequency, target_count, actual_count, is_met, period_start, period_end)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-       ON CONFLICT (rule_id) DO UPDATE SET
-         actual_count=$5, is_met=$6, period_start=$7, period_end=$8`,
-      [rule.id, rule.category_id, rule.frequency, rule.minimum_count, actual, actual >= rule.minimum_count, bounds.start, bounds.end]
-    );
+    const actualCount = await balanceRepo.countCompletedTasksInPeriod(rule.categoryId, bounds.start, bounds.end);
+    await balanceRepo.upsertStatus({
+      ruleId: rule.id,
+      categoryId: rule.categoryId,
+      frequency: rule.frequency,
+      targetCount: rule.minimumCount,
+      actualCount,
+      isMet: actualCount >= rule.minimumCount,
+      periodStart: bounds.start,
+      periodEnd: bounds.end,
+    });
   }
 }
 
-export function createBalanceProjector(pool: Pool): Projector {
+export function createBalanceProjector(balanceRepo: IBalanceViewRepository): Projector {
   return async (event) => {
     const p = event.payload as Record<string, unknown>;
     switch (event.eventType) {
       case 'BalanceRuleCreated':
-        await pool.query(
-          `INSERT INTO balance_rules_view (id, category_id, minimum_count, frequency, day_restriction)
-           VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING`,
-          [p.id, p.categoryId, p.minimumCount, p.frequency, p.dayRestriction ?? null]
-        );
-        await refreshBalanceStatus(pool);
+        await balanceRepo.insertRule({
+          id: p.id as string,
+          categoryId: p.categoryId as string,
+          minimumCount: p.minimumCount as number,
+          frequency: p.frequency as string,
+          dayRestriction: (p.dayRestriction as string | undefined) ?? null,
+        });
+        await refreshBalanceStatus(balanceRepo);
         break;
+
       case 'BalanceRuleUpdated':
-        await pool.query(
-          `UPDATE balance_rules_view SET
-           minimum_count = COALESCE($1, minimum_count),
-           frequency = COALESCE($2, frequency),
-           day_restriction = COALESCE($3, day_restriction)
-           WHERE id = $4`,
-          [p.minimumCount ?? null, p.frequency ?? null, p.dayRestriction ?? null, p.id]
-        );
-        await refreshBalanceStatus(pool);
+        await balanceRepo.updateRule(p.id as string, {
+          minimumCount: (p.minimumCount as number | undefined) ?? null,
+          frequency: (p.frequency as string | undefined) ?? null,
+          dayRestriction: (p.dayRestriction as string | undefined) ?? null,
+        });
+        await refreshBalanceStatus(balanceRepo);
         break;
+
       case 'BalanceRuleDeleted':
-        await pool.query('DELETE FROM balance_rules_view WHERE id = $1', [p.id]);
-        await pool.query('DELETE FROM balance_status_view WHERE rule_id = $1', [p.id]);
+        await balanceRepo.deleteRule(p.id as string);
+        await balanceRepo.deleteStatusForRule(p.id as string);
         break;
+
       case 'TaskCompleted':
-        await refreshBalanceStatus(pool);
+        await refreshBalanceStatus(balanceRepo);
         break;
 
       default:
@@ -94,3 +95,5 @@ export function createBalanceProjector(pool: Pool): Projector {
     }
   };
 }
+
+export type { BalanceRuleRow };

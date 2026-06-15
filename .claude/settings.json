@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:usmannadeem.com)",
-      "PowerShell(cd e:\\\\Projects\\\\personal-care; npx eslint packages --max-warnings=0 2>&1; echo \"exit: $LASTEXITCODE\")"
+      "PowerShell(cd e:\\\\Projects\\\\personal-care; npx eslint packages --max-warnings=0 2>&1; echo \"exit: $LASTEXITCODE\")",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)"
     ]
   }
 }

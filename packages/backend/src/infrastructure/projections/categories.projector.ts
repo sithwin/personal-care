@@ -1,33 +1,38 @@
-import type { Pool } from 'pg';
 import type { Projector } from '../../application/ports/IProjector';
+import type { ICategoryViewRepository } from '../../application/ports/ICategoryViewRepository';
 
-export function createCategoriesProjector(pool: Pool): Projector {
+export function createCategoriesProjector(categoryRepo: ICategoryViewRepository): Projector {
   return async (event) => {
     const p = event.payload as Record<string, unknown>;
     switch (event.eventType) {
       case 'CategoryCreated':
-        await pool.query(
-          `INSERT INTO categories_view (id, name, icon, color, is_default)
-           VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING`,
-          [p.id, p.name, p.icon ?? '📂', p.color ?? '#6b7280', p.isDefault ?? false]
-        );
+        await categoryRepo.insert({
+          id: p.id as string,
+          name: p.name as string,
+          icon: (p.icon as string | undefined) ?? '📂',
+          color: (p.color as string | undefined) ?? '#6b7280',
+          isDefault: (p.isDefault as boolean | undefined) ?? false,
+        });
         break;
+
       case 'CategoryUpdated':
-        await pool.query(
-          `UPDATE categories_view SET
-           name = COALESCE($1, name), icon = COALESCE($2, icon), color = COALESCE($3, color)
-           WHERE id = $4`,
-          [p.name ?? null, p.icon ?? null, p.color ?? null, p.id]
-        );
+        await categoryRepo.update(p.id as string, {
+          name: (p.name as string | undefined) ?? null,
+          icon: (p.icon as string | undefined) ?? null,
+          color: (p.color as string | undefined) ?? null,
+        });
         break;
+
       case 'CategoryDeleted':
-        await pool.query('UPDATE categories_view SET deleted = true WHERE id = $1', [p.id]);
+        await categoryRepo.markDeleted(p.id as string);
         break;
+
       case 'TaskCreated':
-        await pool.query('UPDATE categories_view SET task_count = task_count + 1 WHERE id = $1', [p.categoryId]);
+        await categoryRepo.incrementTaskCount(p.categoryId as string);
         break;
+
       case 'ItemCreated':
-        await pool.query('UPDATE categories_view SET item_count = item_count + 1 WHERE id = $1', [p.categoryId]);
+        await categoryRepo.incrementItemCount(p.categoryId as string);
         break;
 
       default:
