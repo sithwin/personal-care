@@ -20,26 +20,25 @@ async function main() {
   const pool = getPool();
   await runMigrations(pool);
 
-  const { commandBus } = buildDependencies(pool);
-  await seed(commandBus, pool);
+  const deps = buildDependencies(pool);
+  await seed(deps.commandBus, pool);
 
   const app = express();
   app.use(helmet());
   app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173' }));
   app.use(express.json());
 
-  app.use('/commands', makeCommandsRouter(commandBus));
-  app.use('/tasks', makeTasksRouter(pool));
-  app.use('/items', makeItemsRouter(pool));
-  app.use('/categories', makeCategoriesRouter(pool));
-  app.use('/projects', makeProjectsRouter(pool));
-  app.use('/resources', makeResourcesRouter(pool));
-  app.use('/balance', makeBalanceRouter(pool));
-  app.use('/dashboard', makeDashboardRouter(pool));
-  app.use('/suggest', makeSuggestRouter(pool));
+  app.use('/commands', makeCommandsRouter(deps.commandBus));
+  app.use('/tasks', makeTasksRouter(deps.taskQueryService));
+  app.use('/items', makeItemsRouter(deps.itemQueryService));
+  app.use('/categories', makeCategoriesRouter(deps.categoryQueryService));
+  app.use('/projects', makeProjectsRouter(deps.projectQueryService));
+  app.use('/resources', makeResourcesRouter(deps.resourceQueryService));
+  app.use('/balance', makeBalanceRouter(deps.balanceQueryService));
+  app.use('/dashboard', makeDashboardRouter(deps.dashboardQueryService));
+  app.use('/suggest', makeSuggestRouter(deps.suggestQueryService));
 
   app.get('/health', (_req, res) => res.json({ ok: true }));
-
   app.use(errorHandler);
 
   const port = process.env.PORT ?? 3001;
