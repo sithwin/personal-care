@@ -10,15 +10,15 @@ type ItemEvent =
 function reconstruct(history: Pick<DomainEvent, 'eventType' | 'payload'>[]): ItemState | null {
   let state: ItemState | null = null;
   for (const raw of history) {
-    const e = raw as ItemEvent;
-    if (e.eventType === 'ItemCreated') {
-      state = { id: e.payload.id, name: e.payload.name, categoryId: e.payload.categoryId, status: 'to_buy' };
+    const event = raw as ItemEvent;
+    if (event.eventType === 'ItemCreated') {
+      state = { id: event.payload.id, name: event.payload.name, categoryId: event.payload.categoryId, status: 'to_buy' };
     } else if (state !== null) {
-      const s = state as ItemState;
-      if (e.eventType === 'ItemMarkedAvailable' || e.eventType === 'ItemMarkedAvailableAgain') {
-        state = { ...s, status: 'available' };
-      } else if (e.eventType === 'ItemMarkedConsumed') {
-        state = { ...s, status: 'consumed' };
+      const current = state as ItemState;
+      if (event.eventType === 'ItemMarkedAvailable' || event.eventType === 'ItemMarkedAvailableAgain') {
+        state = { ...current, status: 'available' };
+      } else if (event.eventType === 'ItemMarkedConsumed') {
+        state = { ...current, status: 'consumed' };
       }
     }
   }
@@ -52,8 +52,8 @@ export function handleItemCommand(
     }
 
     default: {
-      const _exhaustive: never = command;
-      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+      const exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(exhaustive as { type: string }).type}`);
     }
   }
 }

@@ -15,15 +15,15 @@ type ProjectEvent =
 function reconstruct(history: Pick<DomainEvent, 'eventType' | 'payload'>[]): ProjectState | null {
   let state: ProjectState | null = null;
   for (const raw of history) {
-    const e = raw as ProjectEvent;
-    if (e.eventType === 'ProjectCreated') {
-      state = { id: e.payload.id, name: e.payload.name, status: 'active', taskIds: [] };
+    const event = raw as ProjectEvent;
+    if (event.eventType === 'ProjectCreated') {
+      state = { id: event.payload.id, name: event.payload.name, status: 'active', taskIds: [] };
     } else if (state !== null) {
-      const s = state as ProjectState;
-      if (e.eventType === 'TaskAddedToProject') {
-        state = { ...s, taskIds: [...s.taskIds, e.payload.taskId] };
-      } else if (e.eventType === 'ProjectCompleted') {
-        state = { ...s, status: 'done' };
+      const current = state as ProjectState;
+      if (event.eventType === 'TaskAddedToProject') {
+        state = { ...current, taskIds: [...current.taskIds, event.payload.taskId] };
+      } else if (event.eventType === 'ProjectCompleted') {
+        state = { ...current, status: 'done' };
       }
     }
   }
@@ -52,8 +52,8 @@ export function handleProjectCommand(
     }
 
     default: {
-      const _exhaustive: never = command;
-      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+      const exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(exhaustive as { type: string }).type}`);
     }
   }
 }

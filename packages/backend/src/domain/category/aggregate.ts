@@ -18,12 +18,12 @@ type CategoryEvent =
 function reconstruct(history: Pick<DomainEvent, 'eventType' | 'payload'>[]): CategoryState | null {
   let state: CategoryState | null = null;
   for (const raw of history) {
-    const e = raw as CategoryEvent;
-    if (e.eventType === 'CategoryCreated') {
-      state = { ...e.payload, deleted: false };
-    } else if (e.eventType === 'CategoryUpdated' && state !== null) {
-      state = { ...(state as CategoryState), ...e.payload };
-    } else if (e.eventType === 'CategoryDeleted' && state !== null) {
+    const event = raw as CategoryEvent;
+    if (event.eventType === 'CategoryCreated') {
+      state = { ...event.payload, deleted: false };
+    } else if (event.eventType === 'CategoryUpdated' && state !== null) {
+      state = { ...(state as CategoryState), ...event.payload };
+    } else if (event.eventType === 'CategoryDeleted' && state !== null) {
       state = { ...(state as CategoryState), deleted: true };
     }
   }
@@ -53,8 +53,8 @@ export function handleCategoryCommand(
     }
 
     default: {
-      const _exhaustive: never = command;
-      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+      const exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(exhaustive as { type: string }).type}`);
     }
   }
 }

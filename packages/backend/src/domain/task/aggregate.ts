@@ -2,26 +2,26 @@ import { type DomainEvent, type RecurrenceRule } from '../../types';
 import { type TaskCommand, type TaskState } from './types';
 
 function addInterval(date: Date, rule: RecurrenceRule): Date {
-  const d = new Date(date);
-  if (rule.unit === 'day') d.setDate(d.getDate() + rule.interval);
-  else if (rule.unit === 'week') d.setDate(d.getDate() + rule.interval * 7);
-  else if (rule.unit === 'month') d.setMonth(d.getMonth() + rule.interval);
-  else if (rule.unit === 'year') d.setFullYear(d.getFullYear() + rule.interval);
-  return d;
+  const next = new Date(date);
+  if (rule.unit === 'day') next.setDate(next.getDate() + rule.interval);
+  else if (rule.unit === 'week') next.setDate(next.getDate() + rule.interval * 7);
+  else if (rule.unit === 'month') next.setMonth(next.getMonth() + rule.interval);
+  else if (rule.unit === 'year') next.setFullYear(next.getFullYear() + rule.interval);
+  return next;
 }
 
 function reconstruct(events: Pick<DomainEvent, 'eventType' | 'payload'>[]): TaskState | null {
   let state: TaskState | null = null;
-  for (const e of events) {
-    const p = e.payload as Record<string, unknown>;
-    if (e.eventType === 'TaskCreated') {
-      state = { id: p.id as string, name: p.name as string, categoryId: p.categoryId as string, started: false, completed: false, recurrenceRule: null, dueDate: (p.dueDate as string) ?? null };
+  for (const event of events) {
+    const payload = event.payload as Record<string, unknown>;
+    if (event.eventType === 'TaskCreated') {
+      state = { id: payload.id as string, name: payload.name as string, categoryId: payload.categoryId as string, started: false, completed: false, recurrenceRule: null, dueDate: (payload.dueDate as string) ?? null };
     } else if (state) {
-      if (e.eventType === 'TaskStarted') state.started = true;
-      else if (e.eventType === 'TaskCompleted') state.completed = true;
-      else if (e.eventType === 'TaskRescheduled') { state.completed = false; state.started = false; state.dueDate = p.nextDueDate as string; }
-      else if (e.eventType === 'TaskRecurrenceSet') { state.recurrenceRule = p.recurrenceRule as RecurrenceRule; if (p.dueDate) state.dueDate = p.dueDate as string; }
-      else if (e.eventType === 'RecurrenceSkipped') state.dueDate = p.nextDueDate as string;
+      if (event.eventType === 'TaskStarted') state.started = true;
+      else if (event.eventType === 'TaskCompleted') state.completed = true;
+      else if (event.eventType === 'TaskRescheduled') { state.completed = false; state.started = false; state.dueDate = payload.nextDueDate as string; }
+      else if (event.eventType === 'TaskRecurrenceSet') { state.recurrenceRule = payload.recurrenceRule as RecurrenceRule; if (payload.dueDate) state.dueDate = payload.dueDate as string; }
+      else if (event.eventType === 'RecurrenceSkipped') state.dueDate = payload.nextDueDate as string;
     }
   }
   return state;
@@ -88,8 +88,8 @@ export function handleTaskCommand(
       return [{ aggregateId: command.payload.taskId, aggregateType, eventType: 'TaskPromotedToProject', payload: command.payload }];
 
     default: {
-      const _exhaustive: never = command;
-      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+      const exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(exhaustive as { type: string }).type}`);
     }
   }
 }

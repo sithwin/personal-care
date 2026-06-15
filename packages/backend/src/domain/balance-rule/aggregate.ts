@@ -6,7 +6,7 @@ export function handleBalanceRuleCommand(
   history: Pick<DomainEvent, 'eventType' | 'payload'>[]
 ): Pick<DomainEvent, 'aggregateId' | 'aggregateType' | 'eventType' | 'payload'>[] {
   const aggregateType = 'balance_rule';
-  const exists = history.some(e => e.eventType === 'BalanceRuleCreated');
+  const exists = history.some(event => event.eventType === 'BalanceRuleCreated');
 
   switch (command.type) {
     case 'CreateBalanceRule':
@@ -19,8 +19,8 @@ export function handleBalanceRuleCommand(
       return [{ aggregateId: command.payload.id, aggregateType, eventType: 'BalanceRuleDeleted', payload: command.payload }];
 
     default: {
-      const _exhaustive: never = command;
-      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+      const exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(exhaustive as { type: string }).type}`);
     }
   }
 }

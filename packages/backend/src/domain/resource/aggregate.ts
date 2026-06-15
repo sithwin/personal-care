@@ -6,7 +6,7 @@ export function handleResourceCommand(
   history: Pick<DomainEvent, 'eventType' | 'payload'>[]
 ): Pick<DomainEvent, 'aggregateId' | 'aggregateType' | 'eventType' | 'payload'>[] {
   const aggregateType = 'resource';
-  const exists = history.some(e => e.eventType === 'ResourceCreated');
+  const exists = history.some(event => event.eventType === 'ResourceCreated');
 
   switch (command.type) {
     case 'CreateResource':
@@ -19,8 +19,8 @@ export function handleResourceCommand(
       return [{ aggregateId: command.payload.id, aggregateType, eventType: 'ResourceDeleted', payload: command.payload }];
 
     default: {
-      const _exhaustive: never = command;
-      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+      const exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(exhaustive as { type: string }).type}`);
     }
   }
 }
