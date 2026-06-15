@@ -1,7 +1,11 @@
 import { getPool } from './client';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 async function migrate() {
   const pool = getPool();
+
+  // Event store
   await pool.query(`
     CREATE TABLE IF NOT EXISTS events (
       id BIGSERIAL PRIMARY KEY,
@@ -14,7 +18,12 @@ async function migrate() {
       UNIQUE(aggregate_id, version)
     )
   `);
-  console.log('Event store migration complete');
+
+  // Projections
+  const sql = readFileSync(join(__dirname, 'migrations/001_projections.sql'), 'utf8');
+  await pool.query(sql);
+
+  console.log('All migrations complete');
   await pool.end();
 }
 
