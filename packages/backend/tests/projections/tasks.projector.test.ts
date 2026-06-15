@@ -13,7 +13,7 @@ beforeAll(async () => {
 });
 afterAll(async () => { await pool.end(); });
 beforeEach(async () => {
-  await pool.query('TRUNCATE tasks_view, task_items_view, categories_view RESTART IDENTITY');
+  await pool.query('TRUNCATE tasks_view, task_items_view, items_view, categories_view RESTART IDENTITY');
   await pool.query(`INSERT INTO categories_view (id, name, icon, color) VALUES ($1, 'Cars', '🚗', '#3b82f6') ON CONFLICT DO NOTHING`, [CAT_ID]);
 });
 

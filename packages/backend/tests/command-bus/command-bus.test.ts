@@ -9,7 +9,7 @@ let bus: CommandBus;
 beforeAll(async () => {
   pool = new Pool({ connectionString: process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/personal_care' });
   const store = new EventStore(pool);
-  bus = new CommandBus(store);
+  bus = new CommandBus(store, pool);
   await pool.query('TRUNCATE events RESTART IDENTITY');
 });
 

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "ts-node src/index.ts",
-    "test": "vitest run",
+    "test": "vitest run --fileParallelism=false",
     "migrate": "ts-node src/db/migrate.ts"
   },
   "dependencies": {

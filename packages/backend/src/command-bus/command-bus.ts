@@ -1,5 +1,7 @@
 import { EventStore } from '../event-store/event-store';
 import { StoredEvent } from '../types';
+import { Pool } from 'pg';
+import { runProjectors } from '../projections/runner';
 import { handleCategoryCommand } from '../domain/category/aggregate';
 import { handleItemCommand } from '../domain/item/aggregate';
 import { handleTaskCommand } from '../domain/task/aggregate';
@@ -27,7 +29,7 @@ function getAggregateId(command: AnyCommand): string {
 }
 
 export class CommandBus {
-  constructor(private eventStore: EventStore) {}
+  constructor(private eventStore: EventStore, private pool: Pool) {}
 
   async dispatch(command: AnyCommand): Promise<StoredEvent[]> {
     const aggregateId = getAggregateId(command);
@@ -52,6 +54,8 @@ export class CommandBus {
       throw new Error(`Unknown command type: ${(command as { type: string }).type}`);
     }
 
-    return this.eventStore.append(newEvents as Parameters<typeof this.eventStore.append>[0], expectedVersion);
+    const stored = await this.eventStore.append(newEvents as Parameters<typeof this.eventStore.append>[0], expectedVersion);
+    await runProjectors(stored, this.pool);
+    return stored;
   }
 }
