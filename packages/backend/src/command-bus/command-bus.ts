@@ -107,17 +107,18 @@ export class CommandBus implements ICommandBus {
     }
   }
 
-  async dispatch(command: AnyCommand): Promise<StoredEvent[]> {
+  async dispatch(command: { type: string; payload: Record<string, unknown> }): Promise<StoredEvent[]> {
     const registration = this.registry.get(command.type);
     if (!registration) {
       throw new Error(`No handler registered for command: ${command.type}`);
     }
 
-    const aggregateId = registration.getAggregateId(command);
+    const anyCommand = command as unknown as AnyCommand;
+    const aggregateId = registration.getAggregateId(anyCommand);
     const history = await this.eventStore.getEvents(aggregateId);
     const expectedVersion = history.length > 0 ? history[history.length - 1].version : 0;
 
-    const newEvents = registration.handler(command, history);
+    const newEvents = registration.handler(anyCommand, history);
     const stored = await this.eventStore.append(newEvents, expectedVersion);
 
     await this.onEventsStored?.(stored);

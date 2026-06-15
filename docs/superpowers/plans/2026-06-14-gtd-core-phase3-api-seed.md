@@ -16,7 +16,7 @@
 - Create: `packages/backend/src/api/routes/commands.router.ts`
 - Create: `packages/backend/src/api/middleware/error-handler.ts`
 
-- [ ] **Step 1: Write `packages/backend/src/api/middleware/error-handler.ts`**
+- [x] **Step 1: Write `packages/backend/src/api/middleware/error-handler.ts`**
 
 ```typescript
 import { Request, Response, NextFunction } from 'express';
@@ -31,7 +31,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
 }
 ```
 
-- [ ] **Step 2: Write `packages/backend/src/api/routes/commands.router.ts`**
+- [x] **Step 2: Write `packages/backend/src/api/routes/commands.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -54,7 +54,7 @@ export function makeCommandsRouter(bus: CommandBus): Router {
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add packages/backend/src/api/
@@ -75,7 +75,7 @@ git commit -m "feat: commands API route POST /commands/:type"
 - Create: `packages/backend/src/api/routes/dashboard.router.ts`
 - Create: `packages/backend/src/api/routes/suggest.router.ts`
 
-- [ ] **Step 1: Write `packages/backend/src/api/routes/tasks.router.ts`**
+- [x] **Step 1: Write `packages/backend/src/api/routes/tasks.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -139,7 +139,7 @@ export function makeTasksRouter(pool: Pool): Router {
 }
 ```
 
-- [ ] **Step 2: Write `packages/backend/src/api/routes/items.router.ts`**
+- [x] **Step 2: Write `packages/backend/src/api/routes/items.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -173,7 +173,7 @@ export function makeItemsRouter(pool: Pool): Router {
 }
 ```
 
-- [ ] **Step 3: Write `packages/backend/src/api/routes/categories.router.ts`**
+- [x] **Step 3: Write `packages/backend/src/api/routes/categories.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -201,7 +201,7 @@ export function makeCategoriesRouter(pool: Pool): Router {
 }
 ```
 
-- [ ] **Step 4: Write `packages/backend/src/api/routes/projects.router.ts`**
+- [x] **Step 4: Write `packages/backend/src/api/routes/projects.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -235,7 +235,7 @@ export function makeProjectsRouter(pool: Pool): Router {
 }
 ```
 
-- [ ] **Step 5: Write `packages/backend/src/api/routes/resources.router.ts`**
+- [x] **Step 5: Write `packages/backend/src/api/routes/resources.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -270,7 +270,7 @@ export function makeResourcesRouter(pool: Pool): Router {
 }
 ```
 
-- [ ] **Step 6: Write `packages/backend/src/api/routes/balance.router.ts`**
+- [x] **Step 6: Write `packages/backend/src/api/routes/balance.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -315,7 +315,7 @@ export function makeBalanceRouter(pool: Pool): Router {
 }
 ```
 
-- [ ] **Step 7: Write `packages/backend/src/api/routes/dashboard.router.ts`**
+- [x] **Step 7: Write `packages/backend/src/api/routes/dashboard.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -346,7 +346,7 @@ export function makeDashboardRouter(pool: Pool): Router {
 }
 ```
 
-- [ ] **Step 8: Write `packages/backend/src/api/routes/suggest.router.ts`**
+- [x] **Step 8: Write `packages/backend/src/api/routes/suggest.router.ts`**
 
 ```typescript
 import { Router, Request, Response, NextFunction } from 'express';
@@ -401,7 +401,7 @@ export function makeSuggestRouter(pool: Pool): Router {
 }
 ```
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add packages/backend/src/api/routes/
@@ -415,7 +415,7 @@ git commit -m "feat: all query API routes (tasks, items, categories, projects, r
 **Files:**
 - Create: `packages/backend/src/seed/seed.ts`
 
-- [ ] **Step 1: Write `packages/backend/src/seed/seed.ts`**
+- [x] **Step 1: Write `packages/backend/src/seed/seed.ts`**
 
 ```typescript
 import { Pool } from 'pg';
@@ -455,7 +455,7 @@ export async function seed(bus: CommandBus, pool: Pool): Promise<void> {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add packages/backend/src/seed/
@@ -469,7 +469,7 @@ git commit -m "feat: seed Health and Study categories with default balance rules
 **Files:**
 - Create: `packages/backend/src/index.ts`
 
-- [ ] **Step 1: Write `packages/backend/src/index.ts`**
+- [x] **Step 1: Write `packages/backend/src/index.ts`**
 
 ```typescript
 import express from 'express';
@@ -557,7 +557,7 @@ curl "http://localhost:3001/tasks?status=ready"
 # Expected: JSON array containing the test task with status "ready"
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add packages/backend/src/index.ts
@@ -569,3 +569,17 @@ git commit -m "feat: Express server entry with all routes and seed"
 **Phase 3 complete.** The backend is fully functional. All commands can be dispatched via `POST /commands/:type`. All projection data is queryable via GET routes. Seed ensures Health and Study categories exist on every startup.
 
 Next: `2026-06-14-gtd-core-phase4-frontend-mcp.md` — React frontend (7 screens) + MCP server (9 tools).
+
+---
+
+## Completion Summary
+
+- **Date completed:** 2026-06-15
+- **Total tasks:** 4 (Tasks 14–17)
+- **Total tests:** 39 (all passing — no new tests added in this phase; API routes are integration-level and tested via smoke test)
+- **Deviations:**
+  - `commands.router.ts` uses `ICommandBus` (not `CommandBus` directly) to respect the Dependency Inversion Principle
+  - `index.ts` uses `buildDependencies()` from the composition root instead of constructing `CommandBus(eventStore, pool)` as written in the plan — the pool is wired as the `onEventsStored` projector callback there, not passed directly
+  - `migrate.ts` refactored to export `runMigrations(pool)` so `index.ts` can call it at startup without spawning a subprocess; standalone script mode preserved via `require.main === module` guard
+  - `DomainEvent.payload` widened from `Record<string, unknown>` to `object` to allow specific payload types (e.g. `CreateCategoryPayload`) to be assigned without index signatures — projectors continue to use `StoredEvent.payload: Record<string, unknown>` for key access
+  - `seed.ts` uses `ICommandBus` instead of `CommandBus` (DIP compliance)

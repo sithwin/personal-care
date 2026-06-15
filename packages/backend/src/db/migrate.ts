@@ -1,11 +1,8 @@
-import { getPool } from './client';
+import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-async function migrate() {
-  const pool = getPool();
-
-  // Event store
+export async function runMigrations(pool: Pool): Promise<void> {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS events (
       id BIGSERIAL PRIMARY KEY,
@@ -19,12 +16,17 @@ async function migrate() {
     )
   `);
 
-  // Projections
   const sql = readFileSync(join(__dirname, 'migrations/001_projections.sql'), 'utf8');
   await pool.query(sql);
 
   console.log('All migrations complete');
-  await pool.end();
 }
 
-migrate().catch(console.error);
+// Run standalone: ts-node src/db/migrate.ts
+if (require.main === module) {
+  const { getPool } = require('./client') as typeof import('./client');
+  const pool = getPool();
+  runMigrations(pool)
+    .then(() => pool.end())
+    .catch((err) => { console.error(err); process.exit(1); });
+}

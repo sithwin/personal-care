@@ -35,5 +35,5 @@ export interface DomainEvent {
   aggregateId: UUID;
   aggregateType: string;
   eventType: string;
-  payload: Record<string, unknown>;
+  payload: object; // specific payload types are subtypes of object; StoredEvent uses Record<string,unknown> for key access
 }
