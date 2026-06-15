@@ -1,4 +1,4 @@
-import { UUID, RecurrenceRule, EstimatedDuration } from '../../types';
+import { type UUID, type RecurrenceRule, type EstimatedDuration } from '../../types';
 
 export interface CreateTaskPayload { id: UUID; name: string; categoryId: UUID; description?: string; projectId?: UUID; estimatedDuration?: EstimatedDuration; dueDate?: string; }
 export interface StartTaskPayload { id: UUID; }

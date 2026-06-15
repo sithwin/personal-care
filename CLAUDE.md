@@ -77,6 +77,43 @@ Layers are concentric — **dependencies only point inward**. Outer layers know 
 - Test files use `.spec.ts` extension — never `.test.ts`
 - Spec files are co-located with their source (e.g. `aggregate.ts` and `aggregate.spec.ts` in the same directory)
 
+### Express API Style (enforced on every route file)
+
+> Full rules: [`docs/coding-standards/api-standard.md`](docs/coding-standards/api-standard.md)
+
+Key rules — apply these without being asked:
+- Wrap every async route handler with `asyncHandler` — never write manual try/catch in routes
+- `err: unknown` in error middleware — narrow the type inside; never `any`
+- `import type` for `Request`, `Response`, `NextFunction`, `RequestHandler` — they are type-only
+- No `req`/`res`/`next` type annotations inside `asyncHandler` callbacks — types are inferred
+- `AppError(message, statusCode)` for all thrown HTTP errors
+- Validate request bodies with Zod at the route boundary before the handler
+- Validate env vars with Zod at startup in `src/config/env.ts` — use `env.*` not `process.env.*`
+- Graceful shutdown: handle `SIGTERM` / `SIGINT`, close server then pool
+- All query routes prefixed `/api/v1/`; `/health` and `/commands` have no version prefix
+
+### TypeScript Style (enforced on every file)
+
+> Full rules: [`docs/coding-standards/typescript.md`](docs/coding-standards/typescript.md)
+
+Key rules — apply these without being asked:
+- `const` by default, `let` when reassignment needed, never `var`
+- Named exports only — never `export default`
+- `import type` for type-only imports
+- `===` / `!==` always (only exception: `x == null`)
+- Interfaces for object shapes; type aliases for unions/tuples/primitives
+- Never `any` — use `unknown` with type guards at system boundaries
+- `as` syntax for type assertions, never angle brackets; double-cast via `unknown`
+- Function declarations for named functions; arrow functions for callbacks
+- Parameter properties: `constructor(private readonly pool: Pool)`
+- Throw `Error` instances only — never strings or plain objects
+- Every `switch` must have a `default` case; no fall-through from non-empty cases
+- Never use wrapper types: `String`, `Boolean`, `Number`
+- Never `for...in` on arrays — use `for...of`
+- Naming: `UpperCamelCase` types/classes, `lowerCamelCase` vars/functions, `CONSTANT_CASE` globals
+- Treat acronyms as words: `PgEventStore` not `PGEventStore`, `loadHttpUrl` not `loadHTTPURL`
+- Unused parameters prefixed with `_` (e.g. `_req`, `_next`); used parameters never prefixed with `_`
+
 ### What to avoid
 - Anemic domain models (plain data bags with no behaviour)
 - Business logic leaking into Express route handlers

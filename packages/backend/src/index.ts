@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import pinoHttp from 'pino-http';
 import { getPool } from './db/client';
 import { runMigrations } from './db/migrate';
@@ -18,7 +19,7 @@ import { makeSuggestRouter } from './api/routes/suggest.router';
 import { errorHandler } from './api/middleware/error-handler';
 import { seed } from './seed/seed';
 
-async function main() {
+async function main(): Promise<void> {
   const pool = getPool();
 
   logger.info('Running migrations…');
@@ -30,9 +31,11 @@ async function main() {
   await seed(deps.commandBus, pool);
 
   const app = express();
+
   app.use(helmet());
   app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173' }));
-  app.use(express.json());
+  app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+  app.use(express.json({ limit: '10kb' }));
   app.use(pinoHttp({
     logger,
     customLogLevel: (_req, res) => res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info',
@@ -40,21 +43,38 @@ async function main() {
     customErrorMessage: (req, res) => `${req.method} ${req.url} ${res.statusCode}`,
   }));
 
-  app.use('/commands', makeCommandsRouter(deps.commandBus));
-  app.use('/tasks', makeTasksRouter(deps.taskQueryService));
-  app.use('/items', makeItemsRouter(deps.itemQueryService));
-  app.use('/categories', makeCategoriesRouter(deps.categoryQueryService));
-  app.use('/projects', makeProjectsRouter(deps.projectQueryService));
-  app.use('/resources', makeResourcesRouter(deps.resourceQueryService));
-  app.use('/balance', makeBalanceRouter(deps.balanceQueryService));
-  app.use('/dashboard', makeDashboardRouter(deps.dashboardQueryService));
-  app.use('/suggest', makeSuggestRouter(deps.suggestQueryService));
+  // Versioned query routes
+  app.use('/api/v1/tasks',      makeTasksRouter(deps.taskQueryService));
+  app.use('/api/v1/items',      makeItemsRouter(deps.itemQueryService));
+  app.use('/api/v1/categories', makeCategoriesRouter(deps.categoryQueryService));
+  app.use('/api/v1/projects',   makeProjectsRouter(deps.projectQueryService));
+  app.use('/api/v1/resources',  makeResourcesRouter(deps.resourceQueryService));
+  app.use('/api/v1/balance',    makeBalanceRouter(deps.balanceQueryService));
+  app.use('/api/v1/dashboard',  makeDashboardRouter(deps.dashboardQueryService));
+  app.use('/api/v1/suggest',    makeSuggestRouter(deps.suggestQueryService));
 
-  app.get('/health', (_req, res) => res.json({ ok: true }));
+  // Internal / infrastructure routes — no version prefix
+  app.use('/commands', makeCommandsRouter(deps.commandBus));
+  app.get('/health', (_req, res) => {
+    res.json({ ok: true, uptime: process.uptime(), timestamp: new Date().toISOString() });
+  });
+
   app.use(errorHandler);
 
   const port = process.env.PORT ?? 3001;
-  app.listen(port, () => logger.info({ port }, `Backend running on http://localhost:${port}`));
+  const server = app.listen(port, () => logger.info({ port }, `Backend running on http://localhost:${port}`));
+
+  async function shutdown(signal: string): Promise<void> {
+    logger.info({ signal }, 'Shutting down gracefully');
+    server.close(async () => {
+      await pool.end();
+      logger.info('DB pool closed — exiting');
+      process.exit(0);
+    });
+  }
+
+  process.on('SIGTERM', () => { void shutdown('SIGTERM'); });
+  process.on('SIGINT',  () => { void shutdown('SIGINT'); });
 }
 
 main().catch((err) => {

@@ -1,10 +1,20 @@
 {
   "name": "personal-care",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev:backend": "npm run dev --workspace=packages/backend",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
-    "test": "npm run test --workspaces"
+    "test": "npm run test --workspaces",
+    "lint": "eslint packages",
+    "lint:fix": "eslint packages --fix"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "typescript-eslint": "^8.61.1"
   }
 }

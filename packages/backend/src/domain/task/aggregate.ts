@@ -1,5 +1,5 @@
-import { DomainEvent, RecurrenceRule } from '../../types';
-import { TaskCommand, TaskState } from './types';
+import { type DomainEvent, type RecurrenceRule } from '../../types';
+import { type TaskCommand, type TaskState } from './types';
 
 function addInterval(date: Date, rule: RecurrenceRule): Date {
   const d = new Date(date);
@@ -86,5 +86,10 @@ export function handleTaskCommand(
     case 'PromoteToProject':
       if (!state) throw new Error('Task not found');
       return [{ aggregateId: command.payload.taskId, aggregateType, eventType: 'TaskPromotedToProject', payload: command.payload }];
+
+    default: {
+      const _exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+    }
   }
 }

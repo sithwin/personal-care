@@ -1,5 +1,5 @@
-import { DomainEvent } from '../../types';
-import { BalanceRuleCommand } from './types';
+import { type DomainEvent } from '../../types';
+import { type BalanceRuleCommand } from './types';
 
 export function handleBalanceRuleCommand(
   command: BalanceRuleCommand,
@@ -17,5 +17,10 @@ export function handleBalanceRuleCommand(
     case 'DeleteBalanceRule':
       if (!exists) throw new Error('BalanceRule not found');
       return [{ aggregateId: command.payload.id, aggregateType, eventType: 'BalanceRuleDeleted', payload: command.payload }];
+
+    default: {
+      const _exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+    }
   }
 }

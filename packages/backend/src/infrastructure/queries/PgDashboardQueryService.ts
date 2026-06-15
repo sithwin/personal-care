@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import type { IDashboardQueryService, DashboardView } from '../../application/ports/IDashboardQueryService';
 
 export class PgDashboardQueryService implements IDashboardQueryService {

@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import type { IProjectQueryService, ProjectFilter, ProjectView } from '../../application/ports/IProjectQueryService';
 
 export class PgProjectQueryService implements IProjectQueryService {

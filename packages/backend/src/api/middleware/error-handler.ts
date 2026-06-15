@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { AppError } from '../errors/app-error';
 import { childLogger } from '../../infrastructure/logger';
 
 const log = childLogger('error-handler');
@@ -7,28 +8,43 @@ interface PgError extends Error {
   code?: string;
 }
 
-function resolveStatus(err: PgError): number {
-  // PostgreSQL error codes
-  if (err.code === '22P02') return 400; // invalid UUID / type input
-  if (err.code === '23503') return 409; // foreign key violation
+function isPgError(err: unknown): err is PgError {
+  return err instanceof Error && 'code' in err;
+}
 
-  // Domain error messages
-  if (err.message.includes('not found')) return 404;
-  if (err.message.includes('Concurrency')) return 409;
-  if (err.message.includes('Cannot delete')) return 400;
+function resolveStatus(err: unknown): number {
+  if (err instanceof AppError) return err.statusCode;
+
+  if (isPgError(err)) {
+    if (err.code === '22P02') return 400; // invalid UUID / type input
+    if (err.code === '23503') return 409; // foreign key violation
+  }
+
+  if (err instanceof Error) {
+    if (err.message.includes('not found')) return 404;
+    if (err.message.includes('Concurrency')) return 409;
+    if (err.message.includes('Cannot delete')) return 400;
+  }
 
   return 500;
 }
 
-export function errorHandler(err: PgError, req: Request, res: Response, _next: NextFunction): void {
+export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction): void {
   const status = resolveStatus(err);
-  const context = { method: req.method, url: req.url, status, pgCode: err.code };
+  const message = err instanceof Error ? err.message : 'Internal Server Error';
+  const pgCode = isPgError(err) ? err.code : undefined;
+  const context = { method: req.method, url: req.url, status, pgCode };
 
   if (status >= 500) {
     log.error({ err, ...context }, 'Unhandled server error');
   } else {
-    log.warn({ err: err.message, ...context }, 'Client error');
+    log.warn({ err: message, ...context }, 'Client error');
   }
 
-  res.status(status).json({ error: err.message });
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.status(status).json({
+    success: false,
+    message,
+    ...(isProduction || !(err instanceof Error) ? {} : { stack: err.stack }),
+  });
 }

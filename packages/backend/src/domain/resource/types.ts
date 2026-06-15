@@ -1,4 +1,4 @@
-import { UUID, ResourceType } from '../../types';
+import { type UUID, type ResourceType } from '../../types';
 
 export interface CreateResourcePayload { id: UUID; title: string; type: ResourceType; url?: string; notes?: string; categoryId?: UUID; }
 export interface UpdateResourcePayload { id: UUID; title?: string; url?: string; notes?: string; }

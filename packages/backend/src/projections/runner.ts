@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { StoredEvent } from '../types';
+import { type Pool } from 'pg';
+import { type StoredEvent } from '../types';
 import { tasksProjector } from './tasks.projector';
 import { itemsProjector } from './items.projector';
 import { categoriesProjector } from './categories.projector';

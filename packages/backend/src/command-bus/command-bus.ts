@@ -1,9 +1,9 @@
-import { IEventStore } from '../application/ports/IEventStore';
-import { ICommandBus } from '../application/ports/ICommandBus';
+import { type IEventStore } from '../application/ports/IEventStore';
+import { type ICommandBus } from '../application/ports/ICommandBus';
 import { childLogger } from '../infrastructure/logger';
 
 const log = childLogger('CommandBus');
-import { DomainEvent, StoredEvent } from '../types';
+import { type DomainEvent, type StoredEvent } from '../types';
 import { handleCategoryCommand } from '../domain/category/aggregate';
 import { handleItemCommand } from '../domain/item/aggregate';
 import { handleTaskCommand } from '../domain/task/aggregate';
@@ -24,11 +24,6 @@ type AnyCommand =
   | ProjectCommand
   | ResourceCommand
   | BalanceRuleCommand;
-
-type CommandHandler<TCmd extends AnyCommand> = (
-  command: TCmd,
-  history: StoredEvent[],
-) => DomainEvent[];
 
 interface CommandRegistration {
   handler: (command: AnyCommand, history: StoredEvent[]) => DomainEvent[];

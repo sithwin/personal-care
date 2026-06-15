@@ -1,6 +1,6 @@
-import { Pool } from 'pg';
-import { DomainEvent, StoredEvent } from '../types';
-import { IEventStore } from '../application/ports/IEventStore';
+import { type Pool } from 'pg';
+import { type DomainEvent, type StoredEvent } from '../types';
+import { type IEventStore } from '../application/ports/IEventStore';
 import { childLogger } from '../infrastructure/logger';
 
 const log = childLogger('EventStore');

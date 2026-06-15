@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { StoredEvent } from '../types';
+import { type Pool } from 'pg';
+import { type StoredEvent } from '../types';
 
 const TASK_EVENTS = new Set(['TaskCreated', 'TaskStarted', 'TaskCompleted', 'TaskRescheduled', 'ItemRequirementAdded', 'TaskRecurrenceSet', 'RecurrenceSkipped']);
 const ITEM_EVENTS = new Set(['ItemCreated', 'ItemMarkedAvailable', 'ItemMarkedConsumed', 'ItemMarkedAvailableAgain']);

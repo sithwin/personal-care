@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { StoredEvent } from '../types';
+import { type Pool } from 'pg';
+import { type StoredEvent } from '../types';
 
 async function updateTasksForItem(itemId: string, newStatus: string, pool: Pool): Promise<void> {
   await pool.query('UPDATE task_items_view SET item_status = $1 WHERE item_id = $2', [newStatus, itemId]);
@@ -45,6 +45,9 @@ export async function itemsProjector(event: StoredEvent, pool: Pool): Promise<vo
     case 'ItemMarkedConsumed':
       await pool.query('UPDATE items_view SET status = $1 WHERE id = $2', ['consumed', p.id]);
       await updateTasksForItem(p.id as string, 'consumed', pool);
+      break;
+
+    default:
       break;
   }
 }

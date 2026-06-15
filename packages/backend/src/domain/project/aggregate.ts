@@ -1,5 +1,5 @@
-import { DomainEvent } from '../../types';
-import { ProjectCommand, ProjectState } from './types';
+import { type DomainEvent } from '../../types';
+import { type ProjectCommand, type ProjectState } from './types';
 
 function reconstruct(events: Pick<DomainEvent, 'eventType' | 'payload'>[]): ProjectState | null {
   let state: ProjectState | null = null;
@@ -30,5 +30,10 @@ export function handleProjectCommand(
     case 'CompleteProject':
       if (!state) throw new Error('Project not found');
       return [{ aggregateId: command.payload.id, aggregateType, eventType: 'ProjectCompleted', payload: command.payload }];
+
+    default: {
+      const _exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+    }
   }
 }

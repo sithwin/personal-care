@@ -1,5 +1,5 @@
-import { DomainEvent } from '../../types';
-import { ResourceCommand } from './types';
+import { type DomainEvent } from '../../types';
+import { type ResourceCommand } from './types';
 
 export function handleResourceCommand(
   command: ResourceCommand,
@@ -17,5 +17,10 @@ export function handleResourceCommand(
     case 'DeleteResource':
       if (!exists) throw new Error('Resource not found');
       return [{ aggregateId: command.payload.id, aggregateType, eventType: 'ResourceDeleted', payload: command.payload }];
+
+    default: {
+      const _exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
+    }
   }
 }

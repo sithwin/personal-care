@@ -1,6 +1,7 @@
-import { Pool } from 'pg';
+import type { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { getPool } from './client';
 
 export async function runMigrations(pool: Pool): Promise<void> {
   await pool.query(`
@@ -23,8 +24,7 @@ export async function runMigrations(pool: Pool): Promise<void> {
 }
 
 // Run standalone: ts-node src/db/migrate.ts
-if (require.main === module) {
-  const { getPool } = require('./client') as typeof import('./client');
+if (process.argv[1] === __filename) {
   const pool = getPool();
   runMigrations(pool)
     .then(() => pool.end())

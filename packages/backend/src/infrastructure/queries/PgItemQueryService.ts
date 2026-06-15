@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import type { IItemQueryService, ItemFilter, ItemView } from '../../application/ports/IItemQueryService';
 
 export class PgItemQueryService implements IItemQueryService {

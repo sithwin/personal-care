@@ -1,4 +1,4 @@
-import { DomainEvent, StoredEvent } from '../../types';
+import { type DomainEvent, type StoredEvent } from '../../types';
 
 export interface IEventStore {
   append(events: DomainEvent[], expectedVersion: number): Promise<StoredEvent[]>;

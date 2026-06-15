@@ -1,26 +1,21 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import type { IBalanceQueryService } from '../../application/ports/IBalanceQueryService';
+import { asyncHandler } from '../utils/async-handler';
 
 export function makeBalanceRouter(queryService: IBalanceQueryService): Router {
   const router = Router();
 
-  router.get('/rules', async (_req: Request, res: Response, next: NextFunction) => {
-    try {
-      res.json(await queryService.getRules());
-    } catch (err) { next(err); }
-  });
+  router.get('/rules', asyncHandler(async (_req, res) => {
+    res.json(await queryService.getRules());
+  }));
 
-  router.get('/status', async (_req: Request, res: Response, next: NextFunction) => {
-    try {
-      res.json(await queryService.getStatus());
-    } catch (err) { next(err); }
-  });
+  router.get('/status', asyncHandler(async (_req, res) => {
+    res.json(await queryService.getStatus());
+  }));
 
-  router.get('/status/unmet', async (_req: Request, res: Response, next: NextFunction) => {
-    try {
-      res.json(await queryService.getUnmetStatus());
-    } catch (err) { next(err); }
-  });
+  router.get('/status/unmet', asyncHandler(async (_req, res) => {
+    res.json(await queryService.getUnmetStatus());
+  }));
 
   return router;
 }

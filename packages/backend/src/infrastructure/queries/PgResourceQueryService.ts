@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import type { IResourceQueryService, ResourceFilter, ResourceView } from '../../application/ports/IResourceQueryService';
 
 export class PgResourceQueryService implements IResourceQueryService {

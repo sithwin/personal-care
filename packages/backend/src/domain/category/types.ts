@@ -1,4 +1,4 @@
-import { UUID } from '../../types';
+import { type UUID } from '../../types';
 
 export interface CreateCategoryPayload { id: UUID; name: string; icon: string; color: string; isDefault: boolean; }
 export interface UpdateCategoryPayload { id: UUID; name?: string; icon?: string; color?: string; }

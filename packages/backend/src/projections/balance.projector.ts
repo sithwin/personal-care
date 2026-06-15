@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { StoredEvent } from '../types';
+import { type Pool } from 'pg';
+import { type StoredEvent } from '../types';
 
 function getPeriodBounds(frequency: string, dayRestriction: string | null): { start: Date; end: Date } | null {
   const now = new Date();
@@ -86,6 +86,9 @@ export async function balanceProjector(event: StoredEvent, pool: Pool): Promise<
       break;
     case 'TaskCompleted':
       await refreshBalanceStatus(pool);
+      break;
+
+    default:
       break;
   }
 }

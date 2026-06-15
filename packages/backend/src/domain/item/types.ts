@@ -1,4 +1,4 @@
-import { UUID, ItemStatus } from '../../types';
+import { type UUID, type ItemStatus } from '../../types';
 
 export interface CreateItemPayload { id: UUID; name: string; categoryId: UUID; description?: string; quantity?: number; price?: number; notes?: string; }
 export interface MarkItemPayload { id: UUID; }

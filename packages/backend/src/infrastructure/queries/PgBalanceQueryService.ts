@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import type { IBalanceQueryService, BalanceRuleView, BalanceStatusView } from '../../application/ports/IBalanceQueryService';
 
 const STATUS_SQL = `

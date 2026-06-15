@@ -1,18 +1,17 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import type { ICommandBus } from '../../application/ports/ICommandBus';
+import { asyncHandler } from '../utils/async-handler';
 
 export function makeCommandsRouter(bus: ICommandBus): Router {
   const router = Router();
 
-  router.post('/:type', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const command = { type: req.params.type, payload: req.body } as Parameters<typeof bus.dispatch>[0];
-      const events = await bus.dispatch(command);
-      res.status(201).json({ events: events.map(e => ({ id: e.id, eventType: e.eventType, aggregateId: e.aggregateId })) });
-    } catch (err) {
-      next(err);
-    }
-  });
+  router.post('/:type', asyncHandler(async (req, res) => {
+    const command = { type: req.params.type, payload: req.body as Record<string, unknown> };
+    const events = await bus.dispatch(command);
+    res.status(201).json({
+      events: events.map(e => ({ id: e.id, eventType: e.eventType, aggregateId: e.aggregateId })),
+    });
+  }));
 
   return router;
 }

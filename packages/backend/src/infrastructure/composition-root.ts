@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import { EventStore } from '../event-store/event-store';
 import { CommandBus } from '../command-bus/command-bus';
 import { runProjectors } from '../projections/runner';

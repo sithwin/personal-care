@@ -1,5 +1,5 @@
-import { DomainEvent } from '../../types';
-import { ItemCommand, ItemState } from './types';
+import { type DomainEvent } from '../../types';
+import { type ItemCommand, type ItemState } from './types';
 
 function reconstruct(events: Pick<DomainEvent, 'eventType' | 'payload'>[]): ItemState | null {
   let state: ItemState | null = null;
@@ -34,6 +34,11 @@ export function handleItemCommand(
     case 'MarkItemAvailableAgain': {
       if (!state) throw new Error('Item not found');
       return [{ aggregateId: command.payload.id, aggregateType, eventType: 'ItemMarkedAvailableAgain', payload: command.payload }];
+    }
+
+    default: {
+      const _exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
     }
   }
 }

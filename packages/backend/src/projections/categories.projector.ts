@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { StoredEvent } from '../types';
+import { type Pool } from 'pg';
+import { type StoredEvent } from '../types';
 
 export async function categoriesProjector(event: StoredEvent, pool: Pool): Promise<void> {
   const p = event.payload as Record<string, unknown>;
@@ -27,6 +27,9 @@ export async function categoriesProjector(event: StoredEvent, pool: Pool): Promi
       break;
     case 'ItemCreated':
       await pool.query('UPDATE categories_view SET item_count = item_count + 1 WHERE id = $1', [p.categoryId]);
+      break;
+
+    default:
       break;
   }
 }

@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import type { ISuggestQueryService, SuggestFilter, SuggestedTaskView } from '../../application/ports/ISuggestQueryService';
 
 export class PgSuggestQueryService implements ISuggestQueryService {

@@ -1,4 +1,4 @@
-import { UUID } from '../../types';
+import { type UUID } from '../../types';
 
 export interface CreateProjectPayload { id: UUID; name: string; categoryId: UUID; description?: string; dueDate?: string; }
 export interface AddTaskToProjectPayload { projectId: UUID; taskId: UUID; }

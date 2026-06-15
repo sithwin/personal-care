@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import type { ICategoryQueryService, CategoryView } from '../../application/ports/ICategoryQueryService';
 
 export class PgCategoryQueryService implements ICategoryQueryService {

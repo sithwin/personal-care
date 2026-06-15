@@ -1,5 +1,5 @@
-import { DomainEvent } from '../../types';
-import { CategoryCommand, CategoryState } from './types';
+import { type DomainEvent } from '../../types';
+import { type CategoryCommand, type CategoryState } from './types';
 
 function reconstruct(events: Pick<DomainEvent, 'eventType' | 'payload'>[]): CategoryState | null {
   let state: CategoryState | null = null;
@@ -35,6 +35,11 @@ export function handleCategoryCommand(
       if (!state || state.deleted) throw new Error('Category not found');
       if (state.isDefault) throw new Error('Cannot delete built-in category');
       return [{ aggregateId: command.payload.id, aggregateType, eventType: 'CategoryDeleted', payload: command.payload }];
+    }
+
+    default: {
+      const _exhaustive: never = command;
+      throw new Error(`Unhandled command type: ${(_exhaustive as { type: string }).type}`);
     }
   }
 }

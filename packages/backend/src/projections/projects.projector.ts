@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { StoredEvent } from '../types';
+import { type Pool } from 'pg';
+import { type StoredEvent } from '../types';
 
 export async function projectsProjector(event: StoredEvent, pool: Pool): Promise<void> {
   const p = event.payload as Record<string, unknown>;
@@ -25,6 +25,9 @@ export async function projectsProjector(event: StoredEvent, pool: Pool): Promise
         `UPDATE projects_view SET task_ids = array_append(task_ids, $1::uuid) WHERE id = $2`,
         [p.taskId, p.projectId]
       );
+      break;
+
+    default:
       break;
   }
 }

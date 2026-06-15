@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
 import type { ITaskQueryService, TaskFilter, TaskView } from '../../application/ports/ITaskQueryService';
 
 export class PgTaskQueryService implements ITaskQueryService {

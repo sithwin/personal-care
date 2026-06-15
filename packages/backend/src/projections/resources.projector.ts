@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { StoredEvent } from '../types';
+import { type Pool } from 'pg';
+import { type StoredEvent } from '../types';
 
 export async function resourcesProjector(event: StoredEvent, pool: Pool): Promise<void> {
   const p = event.payload as Record<string, unknown>;
@@ -42,6 +42,9 @@ export async function resourcesProjector(event: StoredEvent, pool: Pool): Promis
         `UPDATE resources_view SET task_ids = array_remove(task_ids, $1::uuid) WHERE id = $2`,
         [p.taskId, p.resourceId]
       );
+      break;
+
+    default:
       break;
   }
 }

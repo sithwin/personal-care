@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { StoredEvent } from '../types';
+import { type Pool } from 'pg';
+import { type StoredEvent } from '../types';
 
 async function deriveAndUpdateStatus(taskId: string, pool: Pool): Promise<void> {
   const taskRes = await pool.query('SELECT started_at, completed_at, due_date, recurrence_rule FROM tasks_view WHERE id = $1', [taskId]);
@@ -95,6 +95,9 @@ export async function tasksProjector(event: StoredEvent, pool: Pool): Promise<vo
 
     case 'TaskPromotedToProject':
       await pool.query('UPDATE tasks_view SET project_id = $1 WHERE id = $2', [p.projectId, p.taskId]);
+      break;
+
+    default:
       break;
   }
 }
