@@ -1,6 +1,6 @@
 import type { UUID } from '../../../types';
 
-export interface StartTask {
-  readonly type: 'StartTask';
+export interface StartTaskCommand {
+  readonly type: 'StartTaskCommand';
   readonly payload: { readonly id: UUID };
 }

@@ -1,6 +1,6 @@
 import type { UUID } from '../../../types';
 
-export interface DetachResourceFromTask {
-  readonly type: 'DetachResourceFromTask';
+export interface AttachResourceToTaskCommand {
+  readonly type: 'AttachResourceToTaskCommand';
   readonly payload: { readonly taskId: UUID; readonly resourceId: UUID };
 }

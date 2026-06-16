@@ -1,12 +1,12 @@
 import type { IEventStore } from '../../ports/IEventStore';
 import type { StoredEvent } from '../../../types';
-import type { CompleteTask } from '../../../domain/task/commands/CompleteTask';
+import type { CompleteTaskCommand } from '../../../domain/task/commands/CompleteTaskCommand';
 import { Task } from '../../../domain/task/Task';
 
 export class CompleteTaskHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
-  async handle(cmd: CompleteTask): Promise<StoredEvent[]> {
+  async handle(cmd: CompleteTaskCommand): Promise<StoredEvent[]> {
     const history = await this.eventStore.getEvents(cmd.payload.id);
     const aggregate = Task.reconstruct(history);
     if (aggregate === null) throw new Error('Task not found');

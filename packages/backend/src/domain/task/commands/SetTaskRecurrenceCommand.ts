@@ -1,6 +1,6 @@
 import type { UUID, RecurrenceRule } from '../../../types';
 
-export interface SetTaskRecurrence {
-  readonly type: 'SetTaskRecurrence';
+export interface SetTaskRecurrenceCommand {
+  readonly type: 'SetTaskRecurrenceCommand';
   readonly payload: { readonly id: UUID; readonly recurrenceRule: RecurrenceRule; readonly dueDate?: string };
 }

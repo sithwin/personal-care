@@ -1,8 +1,8 @@
 import { DomainEvent } from '../../shared/DomainEvent';
-import type { AttachResourceToTask } from '../commands/AttachResourceToTask';
+import type { AttachResourceToTaskCommand } from '../commands/AttachResourceToTaskCommand';
 
 export class ResourceAttachedToTask extends DomainEvent {
-  constructor(readonly payload: AttachResourceToTask['payload']) {
+  constructor(readonly payload: AttachResourceToTaskCommand['payload']) {
     super('ResourceAttachedToTask', payload.taskId, 'task', payload as unknown as Record<string, unknown>);
   }
 }

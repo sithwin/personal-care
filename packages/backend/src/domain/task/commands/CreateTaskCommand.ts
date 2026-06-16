@@ -1,7 +1,7 @@
 import type { UUID, EstimatedDuration } from '../../../types';
 
-export interface CreateTask {
-  readonly type: 'CreateTask';
+export interface CreateTaskCommand {
+  readonly type: 'CreateTaskCommand';
   readonly payload: {
     readonly id: UUID;
     readonly name: string;

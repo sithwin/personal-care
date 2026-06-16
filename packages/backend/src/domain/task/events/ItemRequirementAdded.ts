@@ -1,8 +1,8 @@
 import { DomainEvent } from '../../shared/DomainEvent';
-import type { AddItemRequirement } from '../commands/AddItemRequirement';
+import type { AddItemRequirementCommand } from '../commands/AddItemRequirementCommand';
 
 export class ItemRequirementAdded extends DomainEvent {
-  constructor(readonly payload: AddItemRequirement['payload']) {
+  constructor(readonly payload: AddItemRequirementCommand['payload']) {
     super('ItemRequirementAdded', payload.taskId, 'task', payload as unknown as Record<string, unknown>);
   }
 }

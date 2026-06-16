@@ -1,15 +1,15 @@
 import type { StoredEvent, UUID, RecurrenceRule } from '../../types';
 import type { DomainEvent } from '../shared/DomainEvent';
-import type { CreateTask } from './commands/CreateTask';
-import type { StartTask } from './commands/StartTask';
-import type { CompleteTask } from './commands/CompleteTask';
-import type { AddItemRequirement } from './commands/AddItemRequirement';
-import type { AttachResourceToTask } from './commands/AttachResourceToTask';
-import type { DetachResourceFromTask } from './commands/DetachResourceFromTask';
-import type { SetTaskRecurrence } from './commands/SetTaskRecurrence';
-import type { SkipRecurrence } from './commands/SkipRecurrence';
-import type { ScheduleTask } from './commands/ScheduleTask';
-import type { PromoteToProject } from './commands/PromoteToProject';
+import type { CreateTaskCommand } from './commands/CreateTaskCommand';
+import type { StartTaskCommand } from './commands/StartTaskCommand';
+import type { CompleteTaskCommand } from './commands/CompleteTaskCommand';
+import type { AddItemRequirementCommand } from './commands/AddItemRequirementCommand';
+import type { AttachResourceToTaskCommand } from './commands/AttachResourceToTaskCommand';
+import type { DetachResourceFromTaskCommand } from './commands/DetachResourceFromTaskCommand';
+import type { SetTaskRecurrenceCommand } from './commands/SetTaskRecurrenceCommand';
+import type { SkipRecurrenceCommand } from './commands/SkipRecurrenceCommand';
+import type { ScheduleTaskCommand } from './commands/ScheduleTaskCommand';
+import type { PromoteToProjectCommand } from './commands/PromoteToProjectCommand';
 import { TaskCreated } from './events/TaskCreated';
 import { TaskStarted } from './events/TaskStarted';
 import { TaskCompleted } from './events/TaskCompleted';
@@ -79,15 +79,15 @@ export class Task {
     return state !== null ? new Task(state) : null;
   }
 
-  static create(cmd: CreateTask): TaskCreated {
+  static create(cmd: CreateTaskCommand): TaskCreated {
     return new TaskCreated(cmd.payload);
   }
 
-  start(cmd: StartTask): TaskStarted {
+  start(cmd: StartTaskCommand): TaskStarted {
     return new TaskStarted(cmd.payload);
   }
 
-  complete(cmd: CompleteTask): DomainEvent[] {
+  complete(cmd: CompleteTaskCommand): DomainEvent[] {
     const events: DomainEvent[] = [new TaskCompleted(cmd.payload)];
     if (this.state.recurrenceRule) {
       const base = this.state.dueDate ? new Date(this.state.dueDate) : new Date();
@@ -97,34 +97,34 @@ export class Task {
     return events;
   }
 
-  addItemRequirement(cmd: AddItemRequirement): ItemRequirementAdded {
+  addItemRequirement(cmd: AddItemRequirementCommand): ItemRequirementAdded {
     return new ItemRequirementAdded(cmd.payload);
   }
 
-  attachResource(cmd: AttachResourceToTask): ResourceAttachedToTask {
+  attachResource(cmd: AttachResourceToTaskCommand): ResourceAttachedToTask {
     return new ResourceAttachedToTask(cmd.payload);
   }
 
-  detachResource(cmd: DetachResourceFromTask): ResourceDetachedFromTask {
+  detachResource(cmd: DetachResourceFromTaskCommand): ResourceDetachedFromTask {
     return new ResourceDetachedFromTask(cmd.payload);
   }
 
-  setRecurrence(cmd: SetTaskRecurrence): TaskRecurrenceSet {
+  setRecurrence(cmd: SetTaskRecurrenceCommand): TaskRecurrenceSet {
     return new TaskRecurrenceSet(cmd.payload);
   }
 
-  skipRecurrence(cmd: SkipRecurrence): RecurrenceSkipped {
+  skipRecurrence(cmd: SkipRecurrenceCommand): RecurrenceSkipped {
     if (!this.state.recurrenceRule) throw new Error('Task has no recurrence rule');
     const base = this.state.dueDate ? new Date(this.state.dueDate) : new Date();
     const nextDueDate = Task.addInterval(base, this.state.recurrenceRule).toISOString();
     return new RecurrenceSkipped({ id: cmd.payload.id, nextDueDate });
   }
 
-  schedule(cmd: ScheduleTask): TaskScheduled {
+  schedule(cmd: ScheduleTaskCommand): TaskScheduled {
     return new TaskScheduled(cmd.payload);
   }
 
-  promoteToProject(cmd: PromoteToProject): TaskPromotedToProject {
+  promoteToProject(cmd: PromoteToProjectCommand): TaskPromotedToProject {
     return new TaskPromotedToProject(cmd.payload);
   }
 }
