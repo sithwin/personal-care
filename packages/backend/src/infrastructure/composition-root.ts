@@ -97,37 +97,37 @@ export function buildDependencies(pool: Pool): AppDependencies {
 
   const commandBus = new CommandBus(runProjectors);
 
-  commandBus.register('CreateBalanceRule', new CreateBalanceRuleHandler(eventStore));
-  commandBus.register('UpdateBalanceRule', new UpdateBalanceRuleHandler(eventStore));
-  commandBus.register('DeleteBalanceRule', new DeleteBalanceRuleHandler(eventStore));
+  commandBus.register('CreateBalanceRuleCommand', new CreateBalanceRuleHandler(eventStore));
+  commandBus.register('UpdateBalanceRuleCommand', new UpdateBalanceRuleHandler(eventStore));
+  commandBus.register('DeleteBalanceRuleCommand', new DeleteBalanceRuleHandler(eventStore));
 
-  commandBus.register('CreateCategory', new CreateCategoryHandler(eventStore));
-  commandBus.register('UpdateCategory', new UpdateCategoryHandler(eventStore));
-  commandBus.register('DeleteCategory', new DeleteCategoryHandler(eventStore));
+  commandBus.register('CreateCategoryCommand', new CreateCategoryHandler(eventStore));
+  commandBus.register('UpdateCategoryCommand', new UpdateCategoryHandler(eventStore));
+  commandBus.register('DeleteCategoryCommand', new DeleteCategoryHandler(eventStore));
 
-  commandBus.register('CreateItem', new CreateItemHandler(eventStore));
-  commandBus.register('MarkItemAvailable', new MarkItemAvailableHandler(eventStore));
-  commandBus.register('MarkItemConsumed', new MarkItemConsumedHandler(eventStore));
-  commandBus.register('MarkItemAvailableAgain', new MarkItemAvailableAgainHandler(eventStore));
+  commandBus.register('CreateItemCommand', new CreateItemHandler(eventStore));
+  commandBus.register('MarkItemAvailableCommand', new MarkItemAvailableHandler(eventStore));
+  commandBus.register('MarkItemConsumedCommand', new MarkItemConsumedHandler(eventStore));
+  commandBus.register('MarkItemAvailableAgainCommand', new MarkItemAvailableAgainHandler(eventStore));
 
-  commandBus.register('CreateTask', new CreateTaskHandler(eventStore));
-  commandBus.register('StartTask', new StartTaskHandler(eventStore));
-  commandBus.register('CompleteTask', new CompleteTaskHandler(eventStore));
-  commandBus.register('AddItemRequirement', new AddItemRequirementHandler(eventStore));
-  commandBus.register('AttachResourceToTask', new AttachResourceToTaskHandler(eventStore));
-  commandBus.register('DetachResourceFromTask', new DetachResourceFromTaskHandler(eventStore));
-  commandBus.register('SetTaskRecurrence', new SetTaskRecurrenceHandler(eventStore));
-  commandBus.register('SkipRecurrence', new SkipRecurrenceHandler(eventStore));
-  commandBus.register('ScheduleTask', new ScheduleTaskHandler(eventStore));
-  commandBus.register('PromoteToProject', new PromoteToProjectHandler(eventStore));
+  commandBus.register('CreateTaskCommand', new CreateTaskHandler(eventStore));
+  commandBus.register('StartTaskCommand', new StartTaskHandler(eventStore));
+  commandBus.register('CompleteTaskCommand', new CompleteTaskHandler(eventStore));
+  commandBus.register('AddItemRequirementCommand', new AddItemRequirementHandler(eventStore));
+  commandBus.register('AttachResourceToTaskCommand', new AttachResourceToTaskHandler(eventStore));
+  commandBus.register('DetachResourceFromTaskCommand', new DetachResourceFromTaskHandler(eventStore));
+  commandBus.register('SetTaskRecurrenceCommand', new SetTaskRecurrenceHandler(eventStore));
+  commandBus.register('SkipRecurrenceCommand', new SkipRecurrenceHandler(eventStore));
+  commandBus.register('ScheduleTaskCommand', new ScheduleTaskHandler(eventStore));
+  commandBus.register('PromoteToProjectCommand', new PromoteToProjectHandler(eventStore));
 
-  commandBus.register('CreateProject', new CreateProjectHandler(eventStore));
-  commandBus.register('AddTaskToProject', new AddTaskToProjectHandler(eventStore));
-  commandBus.register('CompleteProject', new CompleteProjectHandler(eventStore));
+  commandBus.register('CreateProjectCommand', new CreateProjectHandler(eventStore));
+  commandBus.register('AddTaskToProjectCommand', new AddTaskToProjectHandler(eventStore));
+  commandBus.register('CompleteProjectCommand', new CompleteProjectHandler(eventStore));
 
-  commandBus.register('CreateResource', new CreateResourceHandler(eventStore));
-  commandBus.register('UpdateResource', new UpdateResourceHandler(eventStore));
-  commandBus.register('DeleteResource', new DeleteResourceHandler(eventStore));
+  commandBus.register('CreateResourceCommand', new CreateResourceHandler(eventStore));
+  commandBus.register('UpdateResourceCommand', new UpdateResourceHandler(eventStore));
+  commandBus.register('DeleteResourceCommand', new DeleteResourceHandler(eventStore));
 
   return {
     eventStore,
