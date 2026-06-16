@@ -40,6 +40,10 @@ import { DeleteBalanceRuleHandler } from '../application/command-handlers/balanc
 import { CreateCategoryHandler } from '../application/command-handlers/category/CreateCategoryHandler';
 import { UpdateCategoryHandler } from '../application/command-handlers/category/UpdateCategoryHandler';
 import { DeleteCategoryHandler } from '../application/command-handlers/category/DeleteCategoryHandler';
+import { CreateItemHandler } from '../application/command-handlers/item/CreateItemHandler';
+import { MarkItemAvailableHandler } from '../application/command-handlers/item/MarkItemAvailableHandler';
+import { MarkItemConsumedHandler } from '../application/command-handlers/item/MarkItemConsumedHandler';
+import { MarkItemAvailableAgainHandler } from '../application/command-handlers/item/MarkItemAvailableAgainHandler';
 
 export interface AppDependencies {
   eventStore: IEventStore;
@@ -84,6 +88,11 @@ export function buildDependencies(pool: Pool): AppDependencies {
   commandBus.register('CreateCategory', new CreateCategoryHandler(eventStore));
   commandBus.register('UpdateCategory', new UpdateCategoryHandler(eventStore));
   commandBus.register('DeleteCategory', new DeleteCategoryHandler(eventStore));
+
+  commandBus.register('CreateItem', new CreateItemHandler(eventStore));
+  commandBus.register('MarkItemAvailable', new MarkItemAvailableHandler(eventStore));
+  commandBus.register('MarkItemConsumed', new MarkItemConsumedHandler(eventStore));
+  commandBus.register('MarkItemAvailableAgain', new MarkItemAvailableAgainHandler(eventStore));
 
   return {
     eventStore,
