@@ -54,6 +54,9 @@ import { SetTaskRecurrenceHandler } from '../application/command-handlers/task/S
 import { SkipRecurrenceHandler } from '../application/command-handlers/task/SkipRecurrenceHandler';
 import { ScheduleTaskHandler } from '../application/command-handlers/task/ScheduleTaskHandler';
 import { PromoteToProjectHandler } from '../application/command-handlers/task/PromoteToProjectHandler';
+import { CreateProjectHandler } from '../application/command-handlers/project/CreateProjectHandler';
+import { AddTaskToProjectHandler } from '../application/command-handlers/project/AddTaskToProjectHandler';
+import { CompleteProjectHandler } from '../application/command-handlers/project/CompleteProjectHandler';
 
 export interface AppDependencies {
   eventStore: IEventStore;
@@ -114,6 +117,10 @@ export function buildDependencies(pool: Pool): AppDependencies {
   commandBus.register('SkipRecurrence', new SkipRecurrenceHandler(eventStore));
   commandBus.register('ScheduleTask', new ScheduleTaskHandler(eventStore));
   commandBus.register('PromoteToProject', new PromoteToProjectHandler(eventStore));
+
+  commandBus.register('CreateProject', new CreateProjectHandler(eventStore));
+  commandBus.register('AddTaskToProject', new AddTaskToProjectHandler(eventStore));
+  commandBus.register('CompleteProject', new CompleteProjectHandler(eventStore));
 
   return {
     eventStore,
