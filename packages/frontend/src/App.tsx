@@ -8,6 +8,7 @@ import { Calendar } from './pages/Calendar';
 import { Suggest } from './pages/Suggest';
 import { Resources } from './pages/Resources';
 import { BalanceRules } from './pages/BalanceRules';
+import { Categories } from './pages/Categories';
 
 export function App() {
   return (
@@ -22,6 +23,7 @@ export function App() {
           <Route path="/suggest" element={<Suggest />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/balance" element={<BalanceRules />} />
+          <Route path="/categories" element={<Categories />} />
         </Routes>
       </main>
     </div>

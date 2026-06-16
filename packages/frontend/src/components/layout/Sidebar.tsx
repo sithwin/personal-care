@@ -52,6 +52,7 @@ export function Sidebar() {
         <NavLink to="/suggest" className={({ isActive }) => `flex items-center gap-2 px-2 py-1.5 rounded text-sm ${isActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>⚡ Suggest</NavLink>
         <NavLink to="/resources" className={({ isActive }) => `flex items-center gap-2 px-2 py-1.5 rounded text-sm ${isActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>🔗 Resources</NavLink>
         <NavLink to="/balance" className={({ isActive }) => `flex items-center gap-2 px-2 py-1.5 rounded text-sm ${isActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>⚖️ Balance</NavLink>
+        <NavLink to="/categories" className={({ isActive }) => `flex items-center gap-2 px-2 py-1.5 rounded text-sm ${isActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>🏷 Categories</NavLink>
       </div>
     </aside>
   );
