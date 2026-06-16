@@ -31,9 +31,4 @@ export interface StoredEvent {
   createdAt: Date;
 }
 
-export interface DomainEvent {
-  aggregateId: UUID;
-  aggregateType: string;
-  eventType: string;
-  payload: object; // specific payload types are subtypes of object; StoredEvent uses Record<string,unknown> for key access
-}
+export { DomainEvent } from './domain/shared/DomainEvent';
