@@ -1,0 +1,61 @@
+import type { StoredEvent, UUID, BalanceFrequency, DayRestriction } from '../../types';
+import type { CreateBalanceRule } from './commands/CreateBalanceRule';
+import type { UpdateBalanceRule } from './commands/UpdateBalanceRule';
+import type { DeleteBalanceRule } from './commands/DeleteBalanceRule';
+import { BalanceRuleCreated } from './events/BalanceRuleCreated';
+import { BalanceRuleUpdated } from './events/BalanceRuleUpdated';
+import { BalanceRuleDeleted } from './events/BalanceRuleDeleted';
+
+interface BalanceRuleState {
+  readonly id: UUID;
+  readonly categoryId: UUID;
+  readonly minimumCount: number;
+  readonly frequency: BalanceFrequency;
+  readonly dayRestriction: DayRestriction;
+  readonly deleted: boolean;
+}
+
+export class BalanceRule {
+  private constructor(private readonly state: BalanceRuleState) {}
+
+  static reconstruct(history: StoredEvent[]): BalanceRule | null {
+    let state: BalanceRuleState | null = null;
+    for (const event of history) {
+      const payload = event.payload;
+      if (event.eventType === 'BalanceRuleCreated') {
+        state = {
+          id: payload.id as UUID,
+          categoryId: payload.categoryId as UUID,
+          minimumCount: payload.minimumCount as number,
+          frequency: payload.frequency as BalanceFrequency,
+          dayRestriction: payload.dayRestriction as DayRestriction,
+          deleted: false,
+        };
+      } else if (state !== null && event.eventType === 'BalanceRuleUpdated') {
+        state = {
+          ...state,
+          minimumCount: (payload.minimumCount as number) ?? state.minimumCount,
+          frequency: (payload.frequency as BalanceFrequency) ?? state.frequency,
+          dayRestriction: (payload.dayRestriction as DayRestriction) ?? state.dayRestriction,
+        };
+      } else if (state !== null && event.eventType === 'BalanceRuleDeleted') {
+        state = { ...state, deleted: true };
+      }
+    }
+    return state !== null ? new BalanceRule(state) : null;
+  }
+
+  static create(cmd: CreateBalanceRule): BalanceRuleCreated {
+    return new BalanceRuleCreated(cmd.payload);
+  }
+
+  update(cmd: UpdateBalanceRule): BalanceRuleUpdated {
+    if (this.state.deleted) throw new Error('BalanceRule not found');
+    return new BalanceRuleUpdated(cmd.payload);
+  }
+
+  delete(cmd: DeleteBalanceRule): BalanceRuleDeleted {
+    if (this.state.deleted) throw new Error('BalanceRule not found');
+    return new BalanceRuleDeleted(cmd.payload);
+  }
+}
