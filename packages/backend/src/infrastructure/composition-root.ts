@@ -57,6 +57,9 @@ import { PromoteToProjectHandler } from '../application/command-handlers/task/Pr
 import { CreateProjectHandler } from '../application/command-handlers/project/CreateProjectHandler';
 import { AddTaskToProjectHandler } from '../application/command-handlers/project/AddTaskToProjectHandler';
 import { CompleteProjectHandler } from '../application/command-handlers/project/CompleteProjectHandler';
+import { CreateResourceHandler } from '../application/command-handlers/resource/CreateResourceHandler';
+import { UpdateResourceHandler } from '../application/command-handlers/resource/UpdateResourceHandler';
+import { DeleteResourceHandler } from '../application/command-handlers/resource/DeleteResourceHandler';
 
 export interface AppDependencies {
   eventStore: IEventStore;
@@ -121,6 +124,10 @@ export function buildDependencies(pool: Pool): AppDependencies {
   commandBus.register('CreateProject', new CreateProjectHandler(eventStore));
   commandBus.register('AddTaskToProject', new AddTaskToProjectHandler(eventStore));
   commandBus.register('CompleteProject', new CompleteProjectHandler(eventStore));
+
+  commandBus.register('CreateResource', new CreateResourceHandler(eventStore));
+  commandBus.register('UpdateResource', new UpdateResourceHandler(eventStore));
+  commandBus.register('DeleteResource', new DeleteResourceHandler(eventStore));
 
   return {
     eventStore,
