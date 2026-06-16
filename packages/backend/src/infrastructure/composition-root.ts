@@ -1,6 +1,6 @@
 import type { Pool } from 'pg';
 import { EventStore } from '../event-store/event-store';
-import { CommandBus } from '../command-bus/command-bus';
+import { CommandBus } from './command-bus/CommandBus';
 import { createCategoriesProjector } from './projections/categories.projector';
 import { createItemsProjector } from './projections/items.projector';
 import { createTasksProjector } from './projections/tasks.projector';
@@ -69,7 +69,7 @@ export function buildDependencies(pool: Pool): AppDependencies {
     createDashboardProjector(dashboardViewRepo),
   ]);
 
-  const commandBus = new CommandBus(eventStore, runProjectors);
+  const commandBus = new CommandBus(runProjectors);
 
   return {
     eventStore,

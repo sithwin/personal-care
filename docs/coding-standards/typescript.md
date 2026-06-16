@@ -17,7 +17,7 @@ These rules apply to all TypeScript files in this project.
 
 - Treat acronyms as words: `loadHttpUrl` not `loadHTTPURL`, `PgTaskQueryService` not `PGTaskQueryService`
 - No `_` prefix or suffix on private identifiers — use `private` keyword instead
-- Single-letter variables only in scopes ≤ 10 lines
+- **Variables must have meaningful names** — single-letter names are never allowed; use `event` not `e`, `payload` not `p`, `current` not `s`, `next` not `d`; only exception: `i`/`j` in traditional indexed `for` loops
 - Suffix `Observable` streams with `$` (optional but consistent within a module)
 
 ---
@@ -84,9 +84,9 @@ const buildDependencies = function(pool: Pool) { ... };
 - Use rest parameters (`...args`) over `arguments`
 - No blank lines at function body start or end
 
-### Unused Parameters
+### Unused Parameters and Variables
 
-Prefix unused parameters with `_`. Used parameters must **not** have the prefix.
+Prefix unused **parameters** with `_`. Used parameters must **not** have the prefix. Local variables must never carry the `_` prefix — if a variable is unused, remove it entirely.
 
 ```typescript
 // ✅ DO — _req signals intentionally unused; req signals actively read
@@ -102,6 +102,12 @@ router.get('/:id', asyncHandler(async (req, res) => {
 // ✅ DO — _next in error middleware (required positionally by Express)
 function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction): void { ... }
 
+// ✅ DO — exhaustive check local variable is used; no _ prefix
+default: {
+  const exhaustive: never = command;
+  throw new Error(`Unhandled: ${(exhaustive as { type: string }).type}`);
+}
+
 // ❌ DON'T — naming a used parameter with _
 router.get('/:id', asyncHandler(async (_req, res) => {
   const id = _req.params.id; // misleading — param IS used
@@ -111,6 +117,10 @@ router.get('/:id', asyncHandler(async (_req, res) => {
 router.get('/all', asyncHandler(async (req, res) => {
   res.json(await queryService.getAll()); // req never read — should be _req
 }));
+
+// ❌ DON'T — _ prefix on a local variable that is used
+const _exhaustive: never = command;
+throw new Error(`Unhandled: ${(_exhaustive as { type: string }).type}`); // used — drop the _
 ```
 
 This rule applies everywhere: route handlers, class methods, standalone functions, and callbacks.
