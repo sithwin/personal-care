@@ -1,6 +1,6 @@
 import type { UUID } from '../../../types';
 
-export interface DeleteBalanceRule {
-  readonly type: 'DeleteBalanceRule';
+export interface DeleteBalanceRuleCommand {
+  readonly type: 'DeleteBalanceRuleCommand';
   readonly payload: { readonly id: UUID };
 }

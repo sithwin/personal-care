@@ -1,7 +1,7 @@
 import type { UUID, BalanceFrequency, DayRestriction } from '../../../types';
 
-export interface UpdateBalanceRule {
-  readonly type: 'UpdateBalanceRule';
+export interface UpdateBalanceRuleCommand {
+  readonly type: 'UpdateBalanceRuleCommand';
   readonly payload: {
     readonly id: UUID;
     readonly minimumCount?: number;

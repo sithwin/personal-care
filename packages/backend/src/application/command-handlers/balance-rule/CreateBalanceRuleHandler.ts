@@ -1,12 +1,12 @@
 import type { IEventStore } from '../../ports/IEventStore';
 import type { StoredEvent } from '../../../types';
-import type { CreateBalanceRule } from '../../../domain/balance-rule/commands/CreateBalanceRule';
+import type { CreateBalanceRuleCommand } from '../../../domain/balance-rule/commands/CreateBalanceRuleCommand';
 import { BalanceRule } from '../../../domain/balance-rule/BalanceRule';
 
 export class CreateBalanceRuleHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
-  async handle(cmd: CreateBalanceRule): Promise<StoredEvent[]> {
+  async handle(cmd: CreateBalanceRuleCommand): Promise<StoredEvent[]> {
     const event = BalanceRule.create(cmd);
     return this.eventStore.append([event], 0);
   }

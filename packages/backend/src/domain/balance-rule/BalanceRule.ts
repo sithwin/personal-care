@@ -1,7 +1,7 @@
 import type { StoredEvent, UUID, BalanceFrequency, DayRestriction } from '../../types';
-import type { CreateBalanceRule } from './commands/CreateBalanceRule';
-import type { UpdateBalanceRule } from './commands/UpdateBalanceRule';
-import type { DeleteBalanceRule } from './commands/DeleteBalanceRule';
+import type { CreateBalanceRuleCommand } from './commands/CreateBalanceRuleCommand';
+import type { UpdateBalanceRuleCommand } from './commands/UpdateBalanceRuleCommand';
+import type { DeleteBalanceRuleCommand } from './commands/DeleteBalanceRuleCommand';
 import { BalanceRuleCreated } from './events/BalanceRuleCreated';
 import { BalanceRuleUpdated } from './events/BalanceRuleUpdated';
 import { BalanceRuleDeleted } from './events/BalanceRuleDeleted';
@@ -45,16 +45,16 @@ export class BalanceRule {
     return state !== null ? new BalanceRule(state) : null;
   }
 
-  static create(cmd: CreateBalanceRule): BalanceRuleCreated {
+  static create(cmd: CreateBalanceRuleCommand): BalanceRuleCreated {
     return new BalanceRuleCreated(cmd.payload);
   }
 
-  update(cmd: UpdateBalanceRule): BalanceRuleUpdated {
+  update(cmd: UpdateBalanceRuleCommand): BalanceRuleUpdated {
     if (this.state.deleted) throw new Error('BalanceRule not found');
     return new BalanceRuleUpdated(cmd.payload);
   }
 
-  delete(cmd: DeleteBalanceRule): BalanceRuleDeleted {
+  delete(cmd: DeleteBalanceRuleCommand): BalanceRuleDeleted {
     if (this.state.deleted) throw new Error('BalanceRule not found');
     return new BalanceRuleDeleted(cmd.payload);
   }

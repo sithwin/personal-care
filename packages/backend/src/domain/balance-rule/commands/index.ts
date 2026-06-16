@@ -1,9 +1,9 @@
-export type { CreateBalanceRule } from './CreateBalanceRule';
-export type { UpdateBalanceRule } from './UpdateBalanceRule';
-export type { DeleteBalanceRule } from './DeleteBalanceRule';
+export type { CreateBalanceRuleCommand } from './CreateBalanceRuleCommand';
+export type { UpdateBalanceRuleCommand } from './UpdateBalanceRuleCommand';
+export type { DeleteBalanceRuleCommand } from './DeleteBalanceRuleCommand';
 
-import type { CreateBalanceRule } from './CreateBalanceRule';
-import type { UpdateBalanceRule } from './UpdateBalanceRule';
-import type { DeleteBalanceRule } from './DeleteBalanceRule';
+import type { CreateBalanceRuleCommand } from './CreateBalanceRuleCommand';
+import type { UpdateBalanceRuleCommand } from './UpdateBalanceRuleCommand';
+import type { DeleteBalanceRuleCommand } from './DeleteBalanceRuleCommand';
 
-export type BalanceRuleCommand = CreateBalanceRule | UpdateBalanceRule | DeleteBalanceRule;
+export type BalanceRuleCommand = CreateBalanceRuleCommand | UpdateBalanceRuleCommand | DeleteBalanceRuleCommand;

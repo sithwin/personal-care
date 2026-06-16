@@ -35,7 +35,7 @@ describe('BalanceRule', () => {
   describe('create', () => {
     it('emits BalanceRuleCreated with correct eventType and aggregateId', () => {
       const cmd = {
-        type: 'CreateBalanceRule' as const,
+        type: 'CreateBalanceRuleCommand' as const,
         payload: { id: 'br-1', categoryId: 'cat-1', minimumCount: 2, frequency: 'weekly' as const, dayRestriction: null },
       };
       const event = BalanceRule.create(cmd);
@@ -48,7 +48,7 @@ describe('BalanceRule', () => {
   describe('update', () => {
     it('emits BalanceRuleUpdated', () => {
       const aggregate = BalanceRule.reconstruct([makeCreatedEvent()])!;
-      const event = aggregate.update({ type: 'UpdateBalanceRule' as const, payload: { id: 'br-1', minimumCount: 5 } });
+      const event = aggregate.update({ type: 'UpdateBalanceRuleCommand' as const, payload: { id: 'br-1', minimumCount: 5 } });
       expect(event.eventType).toBe('BalanceRuleUpdated');
     });
 
@@ -58,7 +58,7 @@ describe('BalanceRule', () => {
         makeCreatedEvent({ eventType: 'BalanceRuleDeleted', version: 2 }),
       ];
       const aggregate = BalanceRule.reconstruct(history)!;
-      expect(() => aggregate.update({ type: 'UpdateBalanceRule' as const, payload: { id: 'br-1' } }))
+      expect(() => aggregate.update({ type: 'UpdateBalanceRuleCommand' as const, payload: { id: 'br-1' } }))
         .toThrow('BalanceRule not found');
     });
   });
@@ -66,7 +66,7 @@ describe('BalanceRule', () => {
   describe('delete', () => {
     it('emits BalanceRuleDeleted', () => {
       const aggregate = BalanceRule.reconstruct([makeCreatedEvent()])!;
-      const event = aggregate.delete({ type: 'DeleteBalanceRule' as const, payload: { id: 'br-1' } });
+      const event = aggregate.delete({ type: 'DeleteBalanceRuleCommand' as const, payload: { id: 'br-1' } });
       expect(event.eventType).toBe('BalanceRuleDeleted');
     });
 
@@ -76,7 +76,7 @@ describe('BalanceRule', () => {
         makeCreatedEvent({ eventType: 'BalanceRuleDeleted', version: 2 }),
       ];
       const aggregate = BalanceRule.reconstruct(history)!;
-      expect(() => aggregate.delete({ type: 'DeleteBalanceRule' as const, payload: { id: 'br-1' } }))
+      expect(() => aggregate.delete({ type: 'DeleteBalanceRuleCommand' as const, payload: { id: 'br-1' } }))
         .toThrow('BalanceRule not found');
     });
   });

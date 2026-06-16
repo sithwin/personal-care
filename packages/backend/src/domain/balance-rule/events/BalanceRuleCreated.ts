@@ -1,8 +1,8 @@
 import { DomainEvent } from '../../shared/DomainEvent';
-import type { CreateBalanceRule } from '../commands/CreateBalanceRule';
+import type { CreateBalanceRuleCommand } from '../commands/CreateBalanceRuleCommand';
 
 export class BalanceRuleCreated extends DomainEvent {
-  constructor(readonly payload: CreateBalanceRule['payload']) {
+  constructor(readonly payload: CreateBalanceRuleCommand['payload']) {
     super('BalanceRuleCreated', payload.id, 'balance_rule', payload as unknown as Record<string, unknown>);
   }
 }

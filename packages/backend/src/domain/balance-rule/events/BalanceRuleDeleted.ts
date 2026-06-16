@@ -1,8 +1,8 @@
 import { DomainEvent } from '../../shared/DomainEvent';
-import type { DeleteBalanceRule } from '../commands/DeleteBalanceRule';
+import type { DeleteBalanceRuleCommand } from '../commands/DeleteBalanceRuleCommand';
 
 export class BalanceRuleDeleted extends DomainEvent {
-  constructor(readonly payload: DeleteBalanceRule['payload']) {
+  constructor(readonly payload: DeleteBalanceRuleCommand['payload']) {
     super('BalanceRuleDeleted', payload.id, 'balance_rule', payload as unknown as Record<string, unknown>);
   }
 }
