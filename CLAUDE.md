@@ -80,6 +80,9 @@ Layers are concentric — **dependencies only point inward**. Outer layers know 
 ### Testing
 - Test files use `.spec.ts` extension — never `.test.ts`
 - Spec files are co-located with their source (e.g. `Task.ts` and `Task.spec.ts` in the same directory)
+- When adding tests for existing, already-correct code (no new behavior), write the test from the type signature and a prose description of intended behavior — never by reading the implementation first, and never from test code pasted into a plan. Run it before opening the source file.
+- A test that fails at this stage is a real signal — either a misunderstood contract or an actual bug. Stop and report it; do not silently edit the test to match unread implementation.
+- Plans must not pre-write finished test bodies for implementers to copy, and must not declare a blanket "no red phase" exemption.
 
 ### Express API Style (enforced on every route file)
 
