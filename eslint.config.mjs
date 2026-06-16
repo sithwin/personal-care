@@ -18,6 +18,7 @@ export default tseslint.config(
         project: [
           'packages/backend/tsconfig.eslint.json',
           'packages/frontend/tsconfig.eslint.json',
+          'packages/mcp/tsconfig.eslint.json',
         ],
       },
     },
