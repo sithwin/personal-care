@@ -1,7 +1,7 @@
 import type { StoredEvent, UUID } from '../../types';
-import type { CreateProject } from './commands/CreateProject';
-import type { AddTaskToProject } from './commands/AddTaskToProject';
-import type { CompleteProject } from './commands/CompleteProject';
+import type { CreateProjectCommand } from './commands/CreateProjectCommand';
+import type { AddTaskToProjectCommand } from './commands/AddTaskToProjectCommand';
+import type { CompleteProjectCommand } from './commands/CompleteProjectCommand';
 import { ProjectCreated } from './events/ProjectCreated';
 import { TaskAddedToProject } from './events/TaskAddedToProject';
 import { ProjectCompleted } from './events/ProjectCompleted';
@@ -31,15 +31,15 @@ export class Project {
     return state !== null ? new Project(state) : null;
   }
 
-  static create(cmd: CreateProject): ProjectCreated {
+  static create(cmd: CreateProjectCommand): ProjectCreated {
     return new ProjectCreated(cmd.payload);
   }
 
-  addTask(cmd: AddTaskToProject): TaskAddedToProject {
+  addTask(cmd: AddTaskToProjectCommand): TaskAddedToProject {
     return new TaskAddedToProject(cmd.payload);
   }
 
-  complete(cmd: CompleteProject): ProjectCompleted {
+  complete(cmd: CompleteProjectCommand): ProjectCompleted {
     return new ProjectCompleted(cmd.payload);
   }
 }

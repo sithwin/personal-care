@@ -1,7 +1,7 @@
 import type { UUID } from '../../../types';
 
-export interface CreateProject {
-  type: 'CreateProject';
+export interface CreateProjectCommand {
+  type: 'CreateProjectCommand';
   payload: {
     id: UUID;
     name: string;

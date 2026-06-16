@@ -1,8 +1,8 @@
 import { DomainEvent } from '../../shared/DomainEvent';
-import type { CompleteProject } from '../commands/CompleteProject';
+import type { CompleteProjectCommand } from '../commands/CompleteProjectCommand';
 
 export class ProjectCompleted extends DomainEvent {
-  constructor(readonly payload: CompleteProject['payload']) {
+  constructor(readonly payload: CompleteProjectCommand['payload']) {
     super('ProjectCompleted', payload.id, 'project', payload as unknown as Record<string, unknown>);
   }
 }

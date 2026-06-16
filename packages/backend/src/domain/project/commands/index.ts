@@ -1,9 +1,9 @@
-export type { CreateProject } from './CreateProject';
-export type { AddTaskToProject } from './AddTaskToProject';
-export type { CompleteProject } from './CompleteProject';
+export type { CreateProjectCommand } from './CreateProjectCommand';
+export type { AddTaskToProjectCommand } from './AddTaskToProjectCommand';
+export type { CompleteProjectCommand } from './CompleteProjectCommand';
 
-import type { CreateProject } from './CreateProject';
-import type { AddTaskToProject } from './AddTaskToProject';
-import type { CompleteProject } from './CompleteProject';
+import type { CreateProjectCommand } from './CreateProjectCommand';
+import type { AddTaskToProjectCommand } from './AddTaskToProjectCommand';
+import type { CompleteProjectCommand } from './CompleteProjectCommand';
 
-export type ProjectCommand = CreateProject | AddTaskToProject | CompleteProject;
+export type ProjectCommand = CreateProjectCommand | AddTaskToProjectCommand | CompleteProjectCommand;

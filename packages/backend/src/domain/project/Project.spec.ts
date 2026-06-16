@@ -37,7 +37,7 @@ describe('Project', () => {
   describe('create', () => {
     it('creates a ProjectCreated event', () => {
       const event = Project.create({
-        type: 'CreateProject',
+        type: 'CreateProjectCommand',
         payload: { id: 'p1', name: 'Renovate kitchen', categoryId: 'cat1' },
       });
 
@@ -51,7 +51,7 @@ describe('Project', () => {
       const created = new ProjectCreated({ id: 'p1', name: 'Renovate kitchen', categoryId: 'cat1' });
       const project = Project.reconstruct([toStoredEvent(created, 1)]);
 
-      const event = project?.addTask({ type: 'AddTaskToProject', payload: { projectId: 'p1', taskId: 't1' } });
+      const event = project?.addTask({ type: 'AddTaskToProjectCommand', payload: { projectId: 'p1', taskId: 't1' } });
 
       expect(event).toBeInstanceOf(TaskAddedToProject);
       expect(event?.payload).toEqual({ projectId: 'p1', taskId: 't1' });
@@ -63,7 +63,7 @@ describe('Project', () => {
       const created = new ProjectCreated({ id: 'p1', name: 'Renovate kitchen', categoryId: 'cat1' });
       const project = Project.reconstruct([toStoredEvent(created, 1)]);
 
-      const event = project?.complete({ type: 'CompleteProject', payload: { id: 'p1' } });
+      const event = project?.complete({ type: 'CompleteProjectCommand', payload: { id: 'p1' } });
 
       expect(event).toBeInstanceOf(ProjectCompleted);
     });
