@@ -34,6 +34,9 @@ import type { IResourceQueryService } from '../application/ports/IResourceQueryS
 import type { IBalanceQueryService } from '../application/ports/IBalanceQueryService';
 import type { IDashboardQueryService } from '../application/ports/IDashboardQueryService';
 import type { ISuggestQueryService } from '../application/ports/ISuggestQueryService';
+import { CreateBalanceRuleHandler } from '../application/command-handlers/balance-rule/CreateBalanceRuleHandler';
+import { UpdateBalanceRuleHandler } from '../application/command-handlers/balance-rule/UpdateBalanceRuleHandler';
+import { DeleteBalanceRuleHandler } from '../application/command-handlers/balance-rule/DeleteBalanceRuleHandler';
 
 export interface AppDependencies {
   eventStore: IEventStore;
@@ -70,6 +73,10 @@ export function buildDependencies(pool: Pool): AppDependencies {
   ]);
 
   const commandBus = new CommandBus(runProjectors);
+
+  commandBus.register('CreateBalanceRule', new CreateBalanceRuleHandler(eventStore));
+  commandBus.register('UpdateBalanceRule', new UpdateBalanceRuleHandler(eventStore));
+  commandBus.register('DeleteBalanceRule', new DeleteBalanceRuleHandler(eventStore));
 
   return {
     eventStore,
