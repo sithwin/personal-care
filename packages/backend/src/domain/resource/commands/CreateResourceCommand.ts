@@ -1,7 +1,7 @@
 import type { UUID, ResourceType } from '../../../types';
 
-export interface CreateResource {
-  type: 'CreateResource';
+export interface CreateResourceCommand {
+  type: 'CreateResourceCommand';
   payload: {
     id: UUID;
     title: string;

@@ -1,8 +1,8 @@
 import { DomainEvent } from '../../shared/DomainEvent';
-import type { UpdateResource } from '../commands/UpdateResource';
+import type { UpdateResourceCommand } from '../commands/UpdateResourceCommand';
 
 export class ResourceUpdated extends DomainEvent {
-  constructor(readonly payload: UpdateResource['payload']) {
+  constructor(readonly payload: UpdateResourceCommand['payload']) {
     super('ResourceUpdated', payload.id, 'resource', payload as unknown as Record<string, unknown>);
   }
 }

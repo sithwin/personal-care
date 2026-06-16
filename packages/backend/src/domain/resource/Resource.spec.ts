@@ -34,7 +34,7 @@ describe('Resource', () => {
   describe('create', () => {
     it('creates a ResourceCreated event', () => {
       const event = Resource.create({
-        type: 'CreateResource',
+        type: 'CreateResourceCommand',
         payload: { id: 'r1', title: 'GTD Book', type: 'link', url: 'https://example.com' },
       });
 
@@ -48,7 +48,7 @@ describe('Resource', () => {
       const created = new ResourceCreated({ id: 'r1', title: 'GTD Book', type: 'link' });
       const resource = Resource.reconstruct([toStoredEvent(created, 1)]);
 
-      const event = resource?.update({ type: 'UpdateResource', payload: { id: 'r1', title: 'GTD Book v2' } });
+      const event = resource?.update({ type: 'UpdateResourceCommand', payload: { id: 'r1', title: 'GTD Book v2' } });
 
       expect(event).toBeInstanceOf(ResourceUpdated);
       expect(event?.payload).toEqual({ id: 'r1', title: 'GTD Book v2' });
@@ -60,7 +60,7 @@ describe('Resource', () => {
       const created = new ResourceCreated({ id: 'r1', title: 'GTD Book', type: 'link' });
       const resource = Resource.reconstruct([toStoredEvent(created, 1)]);
 
-      const event = resource?.delete({ type: 'DeleteResource', payload: { id: 'r1' } });
+      const event = resource?.delete({ type: 'DeleteResourceCommand', payload: { id: 'r1' } });
 
       expect(event).toBeInstanceOf(ResourceDeleted);
     });

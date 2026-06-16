@@ -1,7 +1,7 @@
 import type { StoredEvent, UUID } from '../../types';
-import type { CreateResource } from './commands/CreateResource';
-import type { UpdateResource } from './commands/UpdateResource';
-import type { DeleteResource } from './commands/DeleteResource';
+import type { CreateResourceCommand } from './commands/CreateResourceCommand';
+import type { UpdateResourceCommand } from './commands/UpdateResourceCommand';
+import type { DeleteResourceCommand } from './commands/DeleteResourceCommand';
 import { ResourceCreated } from './events/ResourceCreated';
 import { ResourceUpdated } from './events/ResourceUpdated';
 import { ResourceDeleted } from './events/ResourceDeleted';
@@ -23,15 +23,15 @@ export class Resource {
     return state !== null ? new Resource(state) : null;
   }
 
-  static create(cmd: CreateResource): ResourceCreated {
+  static create(cmd: CreateResourceCommand): ResourceCreated {
     return new ResourceCreated(cmd.payload);
   }
 
-  update(cmd: UpdateResource): ResourceUpdated {
+  update(cmd: UpdateResourceCommand): ResourceUpdated {
     return new ResourceUpdated(cmd.payload);
   }
 
-  delete(cmd: DeleteResource): ResourceDeleted {
+  delete(cmd: DeleteResourceCommand): ResourceDeleted {
     return new ResourceDeleted(cmd.payload);
   }
 }

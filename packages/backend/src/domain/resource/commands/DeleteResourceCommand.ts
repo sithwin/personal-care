@@ -1,7 +1,7 @@
 import type { UUID } from '../../../types';
 
-export interface DeleteResource {
-  type: 'DeleteResource';
+export interface DeleteResourceCommand {
+  type: 'DeleteResourceCommand';
   payload: {
     id: UUID;
   };

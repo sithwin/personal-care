@@ -1,9 +1,9 @@
-export type { CreateResource } from './CreateResource';
-export type { UpdateResource } from './UpdateResource';
-export type { DeleteResource } from './DeleteResource';
+export type { CreateResourceCommand } from './CreateResourceCommand';
+export type { UpdateResourceCommand } from './UpdateResourceCommand';
+export type { DeleteResourceCommand } from './DeleteResourceCommand';
 
-import type { CreateResource } from './CreateResource';
-import type { UpdateResource } from './UpdateResource';
-import type { DeleteResource } from './DeleteResource';
+import type { CreateResourceCommand } from './CreateResourceCommand';
+import type { UpdateResourceCommand } from './UpdateResourceCommand';
+import type { DeleteResourceCommand } from './DeleteResourceCommand';
 
-export type ResourceCommand = CreateResource | UpdateResource | DeleteResource;
+export type ResourceCommand = CreateResourceCommand | UpdateResourceCommand | DeleteResourceCommand;
