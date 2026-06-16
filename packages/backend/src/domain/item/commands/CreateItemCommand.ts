@@ -1,7 +1,7 @@
 import type { UUID } from '../../../types';
 
-export interface CreateItem {
-  readonly type: 'CreateItem';
+export interface CreateItemCommand {
+  readonly type: 'CreateItemCommand';
   readonly payload: {
     readonly id: UUID;
     readonly name: string;

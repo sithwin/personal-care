@@ -21,7 +21,7 @@ describe('Item', () => {
   });
 
   it('create emits ItemCreated with status to_buy', () => {
-    const cmd = { type: 'CreateItem' as const, payload: { id: 'item-1', name: 'Shampoo', categoryId: 'cat-1' } };
+    const cmd = { type: 'CreateItemCommand' as const, payload: { id: 'item-1', name: 'Shampoo', categoryId: 'cat-1' } };
     const event = Item.create(cmd);
     expect(event.eventType).toBe('ItemCreated');
     expect(event.payload.status).toBe('to_buy');
@@ -29,13 +29,13 @@ describe('Item', () => {
 
   it('markAvailable emits ItemMarkedAvailable', () => {
     const aggregate = Item.reconstruct([makeCreatedEvent()])!;
-    const event = aggregate.markAvailable({ type: 'MarkItemAvailable' as const, payload: { id: 'item-1' } });
+    const event = aggregate.markAvailable({ type: 'MarkItemAvailableCommand' as const, payload: { id: 'item-1' } });
     expect(event.eventType).toBe('ItemMarkedAvailable');
   });
 
   it('markConsumed requires item to be available', () => {
     const aggregate = Item.reconstruct([makeCreatedEvent()])!;
-    expect(() => aggregate.markConsumed({ type: 'MarkItemConsumed' as const, payload: { id: 'item-1' } }))
+    expect(() => aggregate.markConsumed({ type: 'MarkItemConsumedCommand' as const, payload: { id: 'item-1' } }))
       .toThrow('Item must be available to consume');
   });
 
@@ -45,13 +45,13 @@ describe('Item', () => {
       makeCreatedEvent({ eventType: 'ItemMarkedAvailable', version: 2 }),
     ];
     const aggregate = Item.reconstruct(history)!;
-    const event = aggregate.markConsumed({ type: 'MarkItemConsumed' as const, payload: { id: 'item-1' } });
+    const event = aggregate.markConsumed({ type: 'MarkItemConsumedCommand' as const, payload: { id: 'item-1' } });
     expect(event.eventType).toBe('ItemMarkedConsumed');
   });
 
   it('markAvailableAgain emits ItemMarkedAvailableAgain', () => {
     const aggregate = Item.reconstruct([makeCreatedEvent()])!;
-    const event = aggregate.markAvailableAgain({ type: 'MarkItemAvailableAgain' as const, payload: { id: 'item-1' } });
+    const event = aggregate.markAvailableAgain({ type: 'MarkItemAvailableAgainCommand' as const, payload: { id: 'item-1' } });
     expect(event.eventType).toBe('ItemMarkedAvailableAgain');
   });
 });

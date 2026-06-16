@@ -1,6 +1,6 @@
 import type { UUID } from '../../../types';
 
-export interface MarkItemAvailableAgain {
-  readonly type: 'MarkItemAvailableAgain';
+export interface MarkItemAvailableCommand {
+  readonly type: 'MarkItemAvailableCommand';
   readonly payload: { readonly id: UUID };
 }
