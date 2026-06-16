@@ -1,15 +1,11 @@
-import { type Pool } from 'pg';
-import { type DomainEvent, type StoredEvent } from '../types';
-import { type IEventStore } from '../application/ports/IEventStore';
-import { childLogger } from '../infrastructure/logger';
+import type { Pool } from 'pg';
+import type { StoredEvent } from '../../types';
+import type { IEventStore } from '../../application/ports/IEventStore';
+import type { DomainEvent } from '../../domain/shared/DomainEvent';
+import { childLogger } from '../logger';
 
 const log = childLogger('EventStore');
 
-/**
- * PostgreSQL implementation of IEventStore.
- * This is an infrastructure adapter — pg stays contained here. (DIP)
- * Uses optimistic concurrency: duplicate version inserts throw a concurrency conflict.
- */
 export class EventStore implements IEventStore {
   constructor(private readonly pool: Pool) {}
 
@@ -20,7 +16,7 @@ export class EventStore implements IEventStore {
       await client.query('BEGIN');
       const stored: StoredEvent[] = [];
       for (let i = 0; i < events.length; i++) {
-        const e = events[i];
+        const event = events[i];
         const version = expectedVersion + i + 1;
         try {
           const result = await client.query<StoredEvent>(
@@ -28,16 +24,16 @@ export class EventStore implements IEventStore {
              VALUES ($1, $2, $3, $4, $5)
              RETURNING id::INT, aggregate_id as "aggregateId", aggregate_type as "aggregateType",
                        event_type as "eventType", payload, version, created_at as "createdAt"`,
-            [e.aggregateId, e.aggregateType, e.eventType, JSON.stringify(e.payload), version],
+            [event.aggregateId, event.aggregateType, event.eventType, JSON.stringify(event.payload), version],
           );
           stored.push(result.rows[0]);
         } catch (err: unknown) {
           if (err instanceof Error && err.message.includes('unique')) {
-            const msg = `Concurrency conflict on aggregate ${e.aggregateId} at version ${version}`;
-            log.warn({ aggregateId: e.aggregateId, version }, msg);
+            const msg = `Concurrency conflict on aggregate ${event.aggregateId} at version ${version}`;
+            log.warn({ aggregateId: event.aggregateId, version }, msg);
             throw new Error(msg);
           }
-          log.error({ err, aggregateId: e.aggregateId }, 'Unexpected error appending event');
+          log.error({ err, aggregateId: event.aggregateId }, 'Unexpected error appending event');
           throw err;
         }
       }

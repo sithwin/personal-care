@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import { EventStore } from '../event-store/event-store';
+import { EventStore } from './persistence/EventStore';
 import { CommandBus } from './command-bus/CommandBus';
 import { createCategoriesProjector } from './projections/categories.projector';
 import { createItemsProjector } from './projections/items.projector';
