@@ -23,9 +23,9 @@ export class Project {
       if (event.eventType === 'ProjectCreated') {
         state = { id: payload.id as UUID, name: payload.name as string, status: 'active', taskIds: [] };
       } else if (state !== null && event.eventType === 'TaskAddedToProject') {
-        state = { ...state, taskIds: [...state.taskIds, payload.taskId as UUID] };
+        state = { ...(state as ProjectState), taskIds: [...state.taskIds, payload.taskId as UUID] };
       } else if (state !== null && event.eventType === 'ProjectCompleted') {
-        state = { ...state, status: 'done' };
+        state = { ...(state as ProjectState), status: 'done' };
       }
     }
     return state !== null ? new Project(state) : null;

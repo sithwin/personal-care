@@ -60,19 +60,19 @@ export class Task {
         };
       } else if (state !== null) {
         if (event.eventType === 'TaskStarted') {
-          state = { ...state, started: true };
+          state = { ...(state as TaskState), started: true };
         } else if (event.eventType === 'TaskCompleted') {
-          state = { ...state, completed: true };
+          state = { ...(state as TaskState), completed: true };
         } else if (event.eventType === 'TaskRescheduled') {
-          state = { ...state, completed: false, started: false, dueDate: payload.nextDueDate as string };
+          state = { ...(state as TaskState), completed: false, started: false, dueDate: payload.nextDueDate as string };
         } else if (event.eventType === 'TaskRecurrenceSet') {
           state = {
-            ...state,
+            ...(state as TaskState),
             recurrenceRule: payload.recurrenceRule as RecurrenceRule,
             dueDate: (payload.dueDate as string) ?? state.dueDate,
           };
         } else if (event.eventType === 'RecurrenceSkipped') {
-          state = { ...state, dueDate: payload.nextDueDate as string };
+          state = { ...(state as TaskState), dueDate: payload.nextDueDate as string };
         }
       }
     }
