@@ -5,6 +5,13 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    proxy: { '/api': { target: 'http://localhost:3001', rewrite: (path) => path.replace(/^\/api/, '') } },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        rewrite: (path) => path.startsWith('/api/commands')
+          ? path.replace(/^\/api/, '')
+          : path.replace(/^\/api/, '/api/v1'),
+      },
+    },
   },
 });
