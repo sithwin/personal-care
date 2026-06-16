@@ -44,6 +44,16 @@ import { CreateItemHandler } from '../application/command-handlers/item/CreateIt
 import { MarkItemAvailableHandler } from '../application/command-handlers/item/MarkItemAvailableHandler';
 import { MarkItemConsumedHandler } from '../application/command-handlers/item/MarkItemConsumedHandler';
 import { MarkItemAvailableAgainHandler } from '../application/command-handlers/item/MarkItemAvailableAgainHandler';
+import { CreateTaskHandler } from '../application/command-handlers/task/CreateTaskHandler';
+import { StartTaskHandler } from '../application/command-handlers/task/StartTaskHandler';
+import { CompleteTaskHandler } from '../application/command-handlers/task/CompleteTaskHandler';
+import { AddItemRequirementHandler } from '../application/command-handlers/task/AddItemRequirementHandler';
+import { AttachResourceToTaskHandler } from '../application/command-handlers/task/AttachResourceToTaskHandler';
+import { DetachResourceFromTaskHandler } from '../application/command-handlers/task/DetachResourceFromTaskHandler';
+import { SetTaskRecurrenceHandler } from '../application/command-handlers/task/SetTaskRecurrenceHandler';
+import { SkipRecurrenceHandler } from '../application/command-handlers/task/SkipRecurrenceHandler';
+import { ScheduleTaskHandler } from '../application/command-handlers/task/ScheduleTaskHandler';
+import { PromoteToProjectHandler } from '../application/command-handlers/task/PromoteToProjectHandler';
 
 export interface AppDependencies {
   eventStore: IEventStore;
@@ -93,6 +103,17 @@ export function buildDependencies(pool: Pool): AppDependencies {
   commandBus.register('MarkItemAvailable', new MarkItemAvailableHandler(eventStore));
   commandBus.register('MarkItemConsumed', new MarkItemConsumedHandler(eventStore));
   commandBus.register('MarkItemAvailableAgain', new MarkItemAvailableAgainHandler(eventStore));
+
+  commandBus.register('CreateTask', new CreateTaskHandler(eventStore));
+  commandBus.register('StartTask', new StartTaskHandler(eventStore));
+  commandBus.register('CompleteTask', new CompleteTaskHandler(eventStore));
+  commandBus.register('AddItemRequirement', new AddItemRequirementHandler(eventStore));
+  commandBus.register('AttachResourceToTask', new AttachResourceToTaskHandler(eventStore));
+  commandBus.register('DetachResourceFromTask', new DetachResourceFromTaskHandler(eventStore));
+  commandBus.register('SetTaskRecurrence', new SetTaskRecurrenceHandler(eventStore));
+  commandBus.register('SkipRecurrence', new SkipRecurrenceHandler(eventStore));
+  commandBus.register('ScheduleTask', new ScheduleTaskHandler(eventStore));
+  commandBus.register('PromoteToProject', new PromoteToProjectHandler(eventStore));
 
   return {
     eventStore,
