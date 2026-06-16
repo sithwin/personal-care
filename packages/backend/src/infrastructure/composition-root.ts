@@ -37,6 +37,9 @@ import type { ISuggestQueryService } from '../application/ports/ISuggestQuerySer
 import { CreateBalanceRuleHandler } from '../application/command-handlers/balance-rule/CreateBalanceRuleHandler';
 import { UpdateBalanceRuleHandler } from '../application/command-handlers/balance-rule/UpdateBalanceRuleHandler';
 import { DeleteBalanceRuleHandler } from '../application/command-handlers/balance-rule/DeleteBalanceRuleHandler';
+import { CreateCategoryHandler } from '../application/command-handlers/category/CreateCategoryHandler';
+import { UpdateCategoryHandler } from '../application/command-handlers/category/UpdateCategoryHandler';
+import { DeleteCategoryHandler } from '../application/command-handlers/category/DeleteCategoryHandler';
 
 export interface AppDependencies {
   eventStore: IEventStore;
@@ -77,6 +80,10 @@ export function buildDependencies(pool: Pool): AppDependencies {
   commandBus.register('CreateBalanceRule', new CreateBalanceRuleHandler(eventStore));
   commandBus.register('UpdateBalanceRule', new UpdateBalanceRuleHandler(eventStore));
   commandBus.register('DeleteBalanceRule', new DeleteBalanceRuleHandler(eventStore));
+
+  commandBus.register('CreateCategory', new CreateCategoryHandler(eventStore));
+  commandBus.register('UpdateCategory', new UpdateCategoryHandler(eventStore));
+  commandBus.register('DeleteCategory', new DeleteCategoryHandler(eventStore));
 
   return {
     eventStore,
