@@ -1,7 +1,7 @@
 import type { UUID } from '../../../types';
 
-export interface CreateCategory {
-  readonly type: 'CreateCategory';
+export interface CreateCategoryCommand {
+  readonly type: 'CreateCategoryCommand';
   readonly payload: {
     readonly id: UUID;
     readonly name: string;

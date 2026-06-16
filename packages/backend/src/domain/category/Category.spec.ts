@@ -29,7 +29,7 @@ describe('Category', () => {
   describe('create', () => {
     it('emits CategoryCreated', () => {
       const cmd = {
-        type: 'CreateCategory' as const,
+        type: 'CreateCategoryCommand' as const,
         payload: { id: 'cat-1', name: 'Home', icon: '🏠', color: '#22c55e', isDefault: false },
       };
       const event = Category.create(cmd);
@@ -41,7 +41,7 @@ describe('Category', () => {
   describe('update', () => {
     it('emits CategoryUpdated', () => {
       const aggregate = Category.reconstruct([makeCreatedEvent()])!;
-      const event = aggregate.update({ type: 'UpdateCategory' as const, payload: { id: 'cat-1', name: 'Garden' } });
+      const event = aggregate.update({ type: 'UpdateCategoryCommand' as const, payload: { id: 'cat-1', name: 'Garden' } });
       expect(event.eventType).toBe('CategoryUpdated');
     });
 
@@ -51,7 +51,7 @@ describe('Category', () => {
         makeCreatedEvent({ eventType: 'CategoryDeleted', version: 2 }),
       ];
       const aggregate = Category.reconstruct(history)!;
-      expect(() => aggregate.update({ type: 'UpdateCategory' as const, payload: { id: 'cat-1' } }))
+      expect(() => aggregate.update({ type: 'UpdateCategoryCommand' as const, payload: { id: 'cat-1' } }))
         .toThrow('Category not found');
     });
   });
@@ -59,7 +59,7 @@ describe('Category', () => {
   describe('delete', () => {
     it('emits CategoryDeleted', () => {
       const aggregate = Category.reconstruct([makeCreatedEvent()])!;
-      const event = aggregate.delete({ type: 'DeleteCategory' as const, payload: { id: 'cat-1' } });
+      const event = aggregate.delete({ type: 'DeleteCategoryCommand' as const, payload: { id: 'cat-1' } });
       expect(event.eventType).toBe('CategoryDeleted');
     });
 
@@ -68,7 +68,7 @@ describe('Category', () => {
         payload: { id: 'cat-1', name: 'Health', icon: '💪', color: '#ef4444', isDefault: true },
       });
       const aggregate = Category.reconstruct([event])!;
-      expect(() => aggregate.delete({ type: 'DeleteCategory' as const, payload: { id: 'cat-1' } }))
+      expect(() => aggregate.delete({ type: 'DeleteCategoryCommand' as const, payload: { id: 'cat-1' } }))
         .toThrow('Cannot delete built-in category');
     });
 
@@ -78,7 +78,7 @@ describe('Category', () => {
         makeCreatedEvent({ eventType: 'CategoryDeleted', version: 2 }),
       ];
       const aggregate = Category.reconstruct(history)!;
-      expect(() => aggregate.delete({ type: 'DeleteCategory' as const, payload: { id: 'cat-1' } }))
+      expect(() => aggregate.delete({ type: 'DeleteCategoryCommand' as const, payload: { id: 'cat-1' } }))
         .toThrow('Category not found');
     });
   });

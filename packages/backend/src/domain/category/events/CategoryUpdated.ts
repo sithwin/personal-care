@@ -1,8 +1,8 @@
 import { DomainEvent } from '../../shared/DomainEvent';
-import type { UpdateCategory } from '../commands/UpdateCategory';
+import type { UpdateCategoryCommand } from '../commands/UpdateCategoryCommand';
 
 export class CategoryUpdated extends DomainEvent {
-  constructor(readonly payload: UpdateCategory['payload']) {
+  constructor(readonly payload: UpdateCategoryCommand['payload']) {
     super('CategoryUpdated', payload.id, 'category', payload as unknown as Record<string, unknown>);
   }
 }

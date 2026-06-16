@@ -1,7 +1,7 @@
 import type { StoredEvent, UUID } from '../../types';
-import type { CreateCategory } from './commands/CreateCategory';
-import type { UpdateCategory } from './commands/UpdateCategory';
-import type { DeleteCategory } from './commands/DeleteCategory';
+import type { CreateCategoryCommand } from './commands/CreateCategoryCommand';
+import type { UpdateCategoryCommand } from './commands/UpdateCategoryCommand';
+import type { DeleteCategoryCommand } from './commands/DeleteCategoryCommand';
 import { CategoryCreated } from './events/CategoryCreated';
 import { CategoryUpdated } from './events/CategoryUpdated';
 import { CategoryDeleted } from './events/CategoryDeleted';
@@ -45,16 +45,16 @@ export class Category {
     return state !== null ? new Category(state) : null;
   }
 
-  static create(cmd: CreateCategory): CategoryCreated {
+  static create(cmd: CreateCategoryCommand): CategoryCreated {
     return new CategoryCreated(cmd.payload);
   }
 
-  update(cmd: UpdateCategory): CategoryUpdated {
+  update(cmd: UpdateCategoryCommand): CategoryUpdated {
     if (this.state.deleted) throw new Error('Category not found');
     return new CategoryUpdated(cmd.payload);
   }
 
-  delete(cmd: DeleteCategory): CategoryDeleted {
+  delete(cmd: DeleteCategoryCommand): CategoryDeleted {
     if (this.state.deleted) throw new Error('Category not found');
     if (this.state.isDefault) throw new Error('Cannot delete built-in category');
     return new CategoryDeleted(cmd.payload);

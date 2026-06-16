@@ -1,9 +1,9 @@
-export type { CreateCategory } from './CreateCategory';
-export type { UpdateCategory } from './UpdateCategory';
-export type { DeleteCategory } from './DeleteCategory';
+export type { CreateCategoryCommand } from './CreateCategoryCommand';
+export type { UpdateCategoryCommand } from './UpdateCategoryCommand';
+export type { DeleteCategoryCommand } from './DeleteCategoryCommand';
 
-import type { CreateCategory } from './CreateCategory';
-import type { UpdateCategory } from './UpdateCategory';
-import type { DeleteCategory } from './DeleteCategory';
+import type { CreateCategoryCommand } from './CreateCategoryCommand';
+import type { UpdateCategoryCommand } from './UpdateCategoryCommand';
+import type { DeleteCategoryCommand } from './DeleteCategoryCommand';
 
-export type CategoryCommand = CreateCategory | UpdateCategory | DeleteCategory;
+export type CategoryCommand = CreateCategoryCommand | UpdateCategoryCommand | DeleteCategoryCommand;

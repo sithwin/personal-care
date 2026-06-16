@@ -1,6 +1,6 @@
 import type { UUID } from '../../../types';
 
-export interface DeleteCategory {
-  readonly type: 'DeleteCategory';
+export interface DeleteCategoryCommand {
+  readonly type: 'DeleteCategoryCommand';
   readonly payload: { readonly id: UUID };
 }
