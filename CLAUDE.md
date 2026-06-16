@@ -20,7 +20,7 @@ npm test                       # all workspaces
 
 ## Architecture
 
-Domain aggregates are **pure functions** — they receive a command + event history, return new events. The `EventStore` persists events to PostgreSQL with optimistic concurrency. The `CommandBus` routes commands to aggregates and persists their events.
+Domain aggregates are **classes** — a private constructor, a static `reconstruct(history)` factory that replays event history into state, and one method per command that returns new domain event(s). The `EventStore` persists events to PostgreSQL with optimistic concurrency. The `CommandBus` is a pure registry in infrastructure: one `ICommandHandler` per command, dispatched by command type, with side effects (projections) triggered after persistence.
 
 ## Plans
 
@@ -54,11 +54,15 @@ Layers are concentric — **dependencies only point inward**. Outer layers know 
 
 ## Coding Standards
 
-### Domain-Driven Design
-- Domain aggregates are pure functions — zero infrastructure dependencies
-- Value Objects for any concept with equality by value (e.g. `UserId`, `Money`)
-- Domain Events are immutable records — name in past tense (`CareEventScheduled`)
-- Never expose internal domain state; use `withEvents()` pattern
+### Domain-Driven Design (enforced on every aggregate)
+
+> Full rules: [`docs/coding-standards/ddd-standard.md`](docs/coding-standards/ddd-standard.md)
+
+- Domain aggregates are classes — zero infrastructure dependencies
+- Private constructor; `static reconstruct(history)` replays events into state, returns `null` if never created
+- One method per command; `create` is `static`, all others are instance methods enforcing invariants against `this.state`
+- Domain Events are classes extending the abstract `DomainEvent` base — name in past tense (`CareEventScheduled`)
+- Never expose internal domain state directly — only via the methods above
 - Repository interfaces live in domain layer; implementations in infrastructure
 
 ### SOLID
@@ -68,14 +72,14 @@ Layers are concentric — **dependencies only point inward**. Outer layers know 
 - No `any` types — use domain-specific types or `unknown` with guards
 
 ### Design Patterns
-- Command/Handler pattern via `CommandBus` (already in place — enforce it)
+- Command/Handler pattern: one `ICommandHandler` class per command, registered with `CommandBus`
 - Repository pattern — no raw SQL outside repository implementations
-- Factory functions over constructors for aggregates
+- Static factory methods over public constructors for aggregates (`static create`, `static reconstruct`)
 - Strategy pattern for pluggable behaviours (e.g. notification channels)
 
 ### Testing
 - Test files use `.spec.ts` extension — never `.test.ts`
-- Spec files are co-located with their source (e.g. `aggregate.ts` and `aggregate.spec.ts` in the same directory)
+- Spec files are co-located with their source (e.g. `Task.ts` and `Task.spec.ts` in the same directory)
 
 ### Express API Style (enforced on every route file)
 
