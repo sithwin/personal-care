@@ -33,13 +33,13 @@ export class Category {
         };
       } else if (state !== null && event.eventType === 'CategoryUpdated') {
         state = {
-          ...state,
+          ...(state as CategoryState),
           name: (payload.name as string) ?? state.name,
           icon: (payload.icon as string) ?? state.icon,
           color: (payload.color as string) ?? state.color,
         };
       } else if (state !== null && event.eventType === 'CategoryDeleted') {
-        state = { ...state, deleted: true };
+        state = { ...(state as CategoryState), deleted: true };
       }
     }
     return state !== null ? new Category(state) : null;

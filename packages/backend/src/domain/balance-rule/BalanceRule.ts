@@ -33,13 +33,13 @@ export class BalanceRule {
         };
       } else if (state !== null && event.eventType === 'BalanceRuleUpdated') {
         state = {
-          ...state,
+          ...(state as BalanceRuleState),
           minimumCount: (payload.minimumCount as number) ?? state.minimumCount,
           frequency: (payload.frequency as BalanceFrequency) ?? state.frequency,
           dayRestriction: (payload.dayRestriction as DayRestriction) ?? state.dayRestriction,
         };
       } else if (state !== null && event.eventType === 'BalanceRuleDeleted') {
-        state = { ...state, deleted: true };
+        state = { ...(state as BalanceRuleState), deleted: true };
       }
     }
     return state !== null ? new BalanceRule(state) : null;

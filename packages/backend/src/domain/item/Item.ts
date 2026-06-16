@@ -31,9 +31,9 @@ export class Item {
         };
       } else if (state !== null) {
         if (event.eventType === 'ItemMarkedAvailable' || event.eventType === 'ItemMarkedAvailableAgain') {
-          state = { ...state, status: 'available' };
+          state = { ...(state as ItemState), status: 'available' };
         } else if (event.eventType === 'ItemMarkedConsumed') {
-          state = { ...state, status: 'consumed' };
+          state = { ...(state as ItemState), status: 'consumed' };
         }
       }
     }
