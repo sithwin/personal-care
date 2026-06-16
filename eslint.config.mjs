@@ -17,7 +17,7 @@ export default tseslint.config(
       parserOptions: {
         project: [
           'packages/backend/tsconfig.eslint.json',
-          'packages/frontend/tsconfig.json',
+          'packages/frontend/tsconfig.eslint.json',
         ],
       },
     },
