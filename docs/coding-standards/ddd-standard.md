@@ -16,10 +16,10 @@ src/
       DomainEvent.ts                  ← abstract base class; one file, shared by all aggregates
     <aggregate-name>/
       commands/
-        CreateFoo.ts                  ← one interface per command
-        UpdateFoo.ts
-        DeleteFoo.ts
-        index.ts                      ← union type FooCommand = CreateFoo | UpdateFoo | ...
+        CreateFooCommand.ts           ← one interface per command, suffixed Command
+        UpdateFooCommand.ts
+        DeleteFooCommand.ts
+        index.ts                      ← union type FooCommand = CreateFooCommand | UpdateFooCommand | ...
       events/
         FooCreated.ts                 ← one class per event, extends DomainEvent
         FooUpdated.ts
@@ -29,7 +29,7 @@ src/
   application/
     command-handlers/
       <aggregate-name>/
-        CreateFooHandler.ts           ← one class per command
+        CreateFooHandler.ts           ← one class per command (handler name itself is not suffixed Command)
         UpdateFooHandler.ts
         DeleteFooHandler.ts
 
@@ -81,14 +81,14 @@ export abstract class DomainEvent {
 One interface per command, grouped under `commands/`. Barrel-exported via `index.ts`.
 
 ```
-src/domain/<aggregate>/commands/CreateBalanceRule.ts
+src/domain/<aggregate>/commands/CreateBalanceRuleCommand.ts
 ```
 
 ```typescript
 import type { UUID, BalanceFrequency, DayRestriction } from '../../../types';
 
-export interface CreateBalanceRule {
-  readonly type: 'CreateBalanceRule';
+export interface CreateBalanceRuleCommand {
+  readonly type: 'CreateBalanceRuleCommand';
   readonly payload: {
     readonly id: UUID;
     readonly categoryId: UUID;
@@ -104,21 +104,21 @@ src/domain/<aggregate>/commands/index.ts
 ```
 
 ```typescript
-export type { CreateBalanceRule } from './CreateBalanceRule';
-export type { UpdateBalanceRule } from './UpdateBalanceRule';
-export type { DeleteBalanceRule } from './DeleteBalanceRule';
+export type { CreateBalanceRuleCommand } from './CreateBalanceRuleCommand';
+export type { UpdateBalanceRuleCommand } from './UpdateBalanceRuleCommand';
+export type { DeleteBalanceRuleCommand } from './DeleteBalanceRuleCommand';
 
-import type { CreateBalanceRule } from './CreateBalanceRule';
-import type { UpdateBalanceRule } from './UpdateBalanceRule';
-import type { DeleteBalanceRule } from './DeleteBalanceRule';
+import type { CreateBalanceRuleCommand } from './CreateBalanceRuleCommand';
+import type { UpdateBalanceRuleCommand } from './UpdateBalanceRuleCommand';
+import type { DeleteBalanceRuleCommand } from './DeleteBalanceRuleCommand';
 
-export type BalanceRuleCommand = CreateBalanceRule | UpdateBalanceRule | DeleteBalanceRule;
+export type BalanceRuleCommand = CreateBalanceRuleCommand | UpdateBalanceRuleCommand | DeleteBalanceRuleCommand;
 ```
 
 **Rules:**
 - Commands are interfaces (not classes) — they carry no behaviour
-- Command names are imperative: `CreateBalanceRule`, not `BalanceRuleCreated`
-- `type` is a string literal matching the class name exactly
+- Command names are imperative and suffixed `Command`: `CreateBalanceRuleCommand`, not `CreateBalanceRule` or `BalanceRuleCreated`
+- `type` is a string literal matching the interface name exactly, including the `Command` suffix
 - All fields are `readonly`
 
 ---
@@ -133,17 +133,17 @@ src/domain/<aggregate>/events/BalanceRuleCreated.ts
 
 ```typescript
 import { DomainEvent } from '../../shared/DomainEvent';
-import type { CreateBalanceRule } from '../commands/CreateBalanceRule';
+import type { CreateBalanceRuleCommand } from '../commands/CreateBalanceRuleCommand';
 
 export class BalanceRuleCreated extends DomainEvent {
-  constructor(readonly payload: CreateBalanceRule['payload']) {
+  constructor(readonly payload: CreateBalanceRuleCommand['payload']) {
     super('BalanceRuleCreated', payload.id, 'balance_rule', payload as unknown as Record<string, unknown>);
   }
 }
 ```
 
 **Rules:**
-- Event names are past tense: `BalanceRuleCreated`, not `CreateBalanceRule`
+- Event names are past tense and never suffixed: `BalanceRuleCreated`, not `CreateBalanceRuleCommand`
 - One event class per file — file name matches class name exactly
 - `payload` is strongly typed via the matching command's payload type
 - `aggregateType` matches the snake_case string used everywhere for this aggregate
@@ -160,9 +160,9 @@ src/domain/<aggregate>/BalanceRule.ts
 
 ```typescript
 import type { StoredEvent } from '../../types';
-import type { CreateBalanceRule } from './commands/CreateBalanceRule';
-import type { UpdateBalanceRule } from './commands/UpdateBalanceRule';
-import type { DeleteBalanceRule } from './commands/DeleteBalanceRule';
+import type { CreateBalanceRuleCommand } from './commands/CreateBalanceRuleCommand';
+import type { UpdateBalanceRuleCommand } from './commands/UpdateBalanceRuleCommand';
+import type { DeleteBalanceRuleCommand } from './commands/DeleteBalanceRuleCommand';
 import { BalanceRuleCreated } from './events/BalanceRuleCreated';
 import { BalanceRuleUpdated } from './events/BalanceRuleUpdated';
 import { BalanceRuleDeleted } from './events/BalanceRuleDeleted';
@@ -210,16 +210,16 @@ export class BalanceRule {
   }
 
   // Static: no existing state needed — the aggregate is being created for the first time.
-  static create(cmd: CreateBalanceRule): BalanceRuleCreated {
+  static create(cmd: CreateBalanceRuleCommand): BalanceRuleCreated {
     return new BalanceRuleCreated(cmd.payload);
   }
 
-  update(cmd: UpdateBalanceRule): BalanceRuleUpdated {
+  update(cmd: UpdateBalanceRuleCommand): BalanceRuleUpdated {
     if (this.state.deleted) throw new Error('BalanceRule not found');
     return new BalanceRuleUpdated(cmd.payload);
   }
 
-  delete(cmd: DeleteBalanceRule): BalanceRuleDeleted {
+  delete(cmd: DeleteBalanceRuleCommand): BalanceRuleDeleted {
     if (this.state.deleted) throw new Error('BalanceRule not found');
     return new BalanceRuleDeleted(cmd.payload);
   }
@@ -247,13 +247,13 @@ src/application/command-handlers/balance-rule/CreateBalanceRuleHandler.ts
 ```typescript
 import type { IEventStore } from '../../ports/IEventStore';
 import type { StoredEvent } from '../../../types';
-import type { CreateBalanceRule } from '../../../domain/balance-rule/commands/CreateBalanceRule';
+import type { CreateBalanceRuleCommand } from '../../../domain/balance-rule/commands/CreateBalanceRuleCommand';
 import { BalanceRule } from '../../../domain/balance-rule/BalanceRule';
 
 export class CreateBalanceRuleHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
-  async handle(cmd: CreateBalanceRule): Promise<StoredEvent[]> {
+  async handle(cmd: CreateBalanceRuleCommand): Promise<StoredEvent[]> {
     const event = BalanceRule.create(cmd);
     return this.eventStore.append([event], 0);
   }
@@ -267,13 +267,13 @@ src/application/command-handlers/balance-rule/UpdateBalanceRuleHandler.ts
 ```typescript
 import type { IEventStore } from '../../ports/IEventStore';
 import type { StoredEvent } from '../../../types';
-import type { UpdateBalanceRule } from '../../../domain/balance-rule/commands/UpdateBalanceRule';
+import type { UpdateBalanceRuleCommand } from '../../../domain/balance-rule/commands/UpdateBalanceRuleCommand';
 import { BalanceRule } from '../../../domain/balance-rule/BalanceRule';
 
 export class UpdateBalanceRuleHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
-  async handle(cmd: UpdateBalanceRule): Promise<StoredEvent[]> {
+  async handle(cmd: UpdateBalanceRuleCommand): Promise<StoredEvent[]> {
     const history = await this.eventStore.getEvents(cmd.payload.id);
     const aggregate = BalanceRule.reconstruct(history);
     if (aggregate === null) throw new Error('BalanceRule not found');
@@ -302,9 +302,9 @@ const createBalanceRuleHandler = new CreateBalanceRuleHandler(eventStore);
 const updateBalanceRuleHandler = new UpdateBalanceRuleHandler(eventStore);
 const deleteBalanceRuleHandler = new DeleteBalanceRuleHandler(eventStore);
 
-commandBus.register('CreateBalanceRule', createBalanceRuleHandler);
-commandBus.register('UpdateBalanceRule', updateBalanceRuleHandler);
-commandBus.register('DeleteBalanceRule', deleteBalanceRuleHandler);
+commandBus.register('CreateBalanceRuleCommand', createBalanceRuleHandler);
+commandBus.register('UpdateBalanceRuleCommand', updateBalanceRuleHandler);
+commandBus.register('DeleteBalanceRuleCommand', deleteBalanceRuleHandler);
 ```
 
 **Rules:**
