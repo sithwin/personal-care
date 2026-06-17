@@ -10,6 +10,7 @@ import type { SetTaskRecurrenceCommand } from './commands/SetTaskRecurrenceComma
 import type { SkipRecurrenceCommand } from './commands/SkipRecurrenceCommand';
 import type { ScheduleTaskCommand } from './commands/ScheduleTaskCommand';
 import type { PromoteToProjectCommand } from './commands/PromoteToProjectCommand';
+import type { UpdateTaskCommand } from './commands/UpdateTaskCommand';
 import { TaskCreated } from './events/TaskCreated';
 import { TaskStarted } from './events/TaskStarted';
 import { TaskCompleted } from './events/TaskCompleted';
@@ -21,6 +22,7 @@ import { TaskRecurrenceSet } from './events/TaskRecurrenceSet';
 import { RecurrenceSkipped } from './events/RecurrenceSkipped';
 import { TaskScheduled } from './events/TaskScheduled';
 import { TaskPromotedToProject } from './events/TaskPromotedToProject';
+import { TaskUpdated } from './events/TaskUpdated';
 
 interface TaskState {
   readonly id: UUID;
@@ -73,6 +75,13 @@ export class Task {
           };
         } else if (event.eventType === 'RecurrenceSkipped') {
           state = { ...(state as TaskState), dueDate: payload.nextDueDate as string };
+        } else if (event.eventType === 'TaskUpdated') {
+          state = {
+            ...(state as TaskState),
+            name: (payload.name as string | undefined) ?? state.name,
+            categoryId: (payload.categoryId as UUID | undefined) ?? state.categoryId,
+            dueDate: (payload.dueDate as string | undefined) ?? state.dueDate,
+          };
         }
       }
     }
@@ -118,6 +127,10 @@ export class Task {
     const base = this.state.dueDate ? new Date(this.state.dueDate) : new Date();
     const nextDueDate = Task.addInterval(base, this.state.recurrenceRule).toISOString();
     return new RecurrenceSkipped({ id: cmd.payload.id, nextDueDate });
+  }
+
+  update(cmd: UpdateTaskCommand): TaskUpdated {
+    return new TaskUpdated(cmd.payload);
   }
 
   schedule(cmd: ScheduleTaskCommand): TaskScheduled {
