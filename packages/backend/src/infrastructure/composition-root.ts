@@ -58,6 +58,11 @@ import { UpdateTaskHandler } from '../application/command-handlers/task/UpdateTa
 import { CreateProjectHandler } from '../application/command-handlers/project/CreateProjectHandler';
 import { AddTaskToProjectHandler } from '../application/command-handlers/project/AddTaskToProjectHandler';
 import { CompleteProjectHandler } from '../application/command-handlers/project/CompleteProjectHandler';
+import { PlanProjectHandler } from '../application/command-handlers/project/PlanProjectHandler';
+import { StartProjectHandler } from '../application/command-handlers/project/StartProjectHandler';
+import { PauseProjectHandler } from '../application/command-handlers/project/PauseProjectHandler';
+import { ResumeProjectHandler } from '../application/command-handlers/project/ResumeProjectHandler';
+import { UpdateProjectHandler } from '../application/command-handlers/project/UpdateProjectHandler';
 import { CreateResourceHandler } from '../application/command-handlers/resource/CreateResourceHandler';
 import { UpdateResourceHandler } from '../application/command-handlers/resource/UpdateResourceHandler';
 import { DeleteResourceHandler } from '../application/command-handlers/resource/DeleteResourceHandler';
@@ -126,6 +131,11 @@ export function buildDependencies(pool: Pool): AppDependencies {
   commandBus.register('CreateProjectCommand', new CreateProjectHandler(eventStore));
   commandBus.register('AddTaskToProjectCommand', new AddTaskToProjectHandler(eventStore));
   commandBus.register('CompleteProjectCommand', new CompleteProjectHandler(eventStore));
+  commandBus.register('PlanProjectCommand', new PlanProjectHandler(eventStore));
+  commandBus.register('StartProjectCommand', new StartProjectHandler(eventStore));
+  commandBus.register('PauseProjectCommand', new PauseProjectHandler(eventStore));
+  commandBus.register('ResumeProjectCommand', new ResumeProjectHandler(eventStore));
+  commandBus.register('UpdateProjectCommand', new UpdateProjectHandler(eventStore));
 
   commandBus.register('CreateResourceCommand', new CreateResourceHandler(eventStore));
   commandBus.register('UpdateResourceCommand', new UpdateResourceHandler(eventStore));

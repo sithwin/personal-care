@@ -14,19 +14,32 @@ export function createProjectsProjector(projectRepo: IProjectViewRepository): Pr
           dueDate: (p.dueDate as string | undefined) ?? null,
         });
         break;
-
       case 'TaskAddedToProject':
-        await projectRepo.appendTask(p.projectId as string, p.taskId as string);
-        break;
-
-      case 'ProjectCompleted':
-        await projectRepo.markCompleted(p.id as string);
-        break;
-
       case 'TaskPromotedToProject':
         await projectRepo.appendTask(p.projectId as string, p.taskId as string);
         break;
-
+      case 'ProjectCompleted':
+        await projectRepo.markCompleted(p.id as string);
+        break;
+      case 'ProjectPlanned':
+        await projectRepo.plan(p.id as string, p.startDate as string, p.endDate as string);
+        break;
+      case 'ProjectStarted':
+        await projectRepo.start(p.id as string, (p.endDate as string | undefined) ?? null);
+        break;
+      case 'ProjectPaused':
+        await projectRepo.pause(p.id as string);
+        break;
+      case 'ProjectResumed':
+        await projectRepo.resume(p.id as string);
+        break;
+      case 'ProjectUpdated':
+        await projectRepo.updateMeta(p.id as string, {
+          name: (p.name as string | undefined) ?? null,
+          description: (p.description as string | undefined) ?? null,
+          priority: (p.priority as string | undefined) ?? null,
+        });
+        break;
       default:
         break;
     }
