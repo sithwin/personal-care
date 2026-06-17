@@ -110,7 +110,7 @@
 
 ---
 
-- [ ] **Step 1: Create UpdateTaskCommand**
+- [x] **Step 1: Create UpdateTaskCommand**
 
 Create `packages/backend/src/domain/task/commands/UpdateTaskCommand.ts`:
 
@@ -130,7 +130,7 @@ export interface UpdateTaskCommand {
 }
 ```
 
-- [ ] **Step 2: Create TaskUpdated event**
+- [x] **Step 2: Create TaskUpdated event**
 
 Create `packages/backend/src/domain/task/events/TaskUpdated.ts`:
 
@@ -145,7 +145,7 @@ export class TaskUpdated extends DomainEvent {
 }
 ```
 
-- [ ] **Step 3: Write the failing test for UpdateTaskHandler**
+- [x] **Step 3: Write the failing test for UpdateTaskHandler**
 
 Create `packages/backend/src/application/command-handlers/task/UpdateTaskHandler.spec.ts`:
 
@@ -213,7 +213,7 @@ describe('UpdateTaskHandler', () => {
 });
 ```
 
-- [ ] **Step 4: Run the test — expect FAIL (UpdateTaskHandler not defined)**
+- [x] **Step 4: Run the test — expect FAIL (UpdateTaskHandler not defined)**
 
 ```bash
 npx vitest run packages/backend/src/application/command-handlers/task/UpdateTaskHandler.spec.ts
@@ -221,7 +221,7 @@ npx vitest run packages/backend/src/application/command-handlers/task/UpdateTask
 
 Expected: FAIL — "Cannot find module './UpdateTaskHandler'"
 
-- [ ] **Step 5: Create UpdateTaskHandler**
+- [x] **Step 5: Create UpdateTaskHandler**
 
 Create `packages/backend/src/application/command-handlers/task/UpdateTaskHandler.ts`:
 
@@ -244,7 +244,7 @@ export class UpdateTaskHandler {
 }
 ```
 
-- [ ] **Step 6: Add `update()` to Task domain**
+- [x] **Step 6: Add `update()` to Task domain**
 
 Open `packages/backend/src/domain/task/Task.ts`. Add import at top:
 
@@ -274,7 +274,7 @@ update(cmd: UpdateTaskCommand): TaskUpdated {
 }
 ```
 
-- [ ] **Step 7: Run the test — expect PASS**
+- [x] **Step 7: Run the test — expect PASS**
 
 ```bash
 npx vitest run packages/backend/src/application/command-handlers/task/UpdateTaskHandler.spec.ts
@@ -282,7 +282,7 @@ npx vitest run packages/backend/src/application/command-handlers/task/UpdateTask
 
 Expected: PASS (2 tests)
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add packages/backend/src/domain/task/events/TaskUpdated.ts
@@ -310,7 +310,7 @@ git commit -m "feat(task): add UpdateTaskCommand, TaskUpdated event, UpdateTaskH
 
 ---
 
-- [ ] **Step 1: Add `UpdateTaskData` interface and `updateFields` to ITaskViewRepository**
+- [x] **Step 1: Add `UpdateTaskData` interface and `updateFields` to ITaskViewRepository**
 
 Open `packages/backend/src/application/ports/ITaskViewRepository.ts`. Add after `InsertTaskData`:
 
@@ -331,7 +331,7 @@ Add to `ITaskViewRepository` interface:
 updateFields(id: string, data: UpdateTaskData): Promise<void>;
 ```
 
-- [ ] **Step 2: Implement `updateFields` in PgTaskViewRepository**
+- [x] **Step 2: Implement `updateFields` in PgTaskViewRepository**
 
 Open `packages/backend/src/infrastructure/persistence/views/PgTaskViewRepository.ts`. Add after `setProjectId`:
 
@@ -359,7 +359,7 @@ Add the import for `UpdateTaskData` at the top of the file:
 import type { ITaskViewRepository, InsertTaskData, TaskViewRow, UpdateTaskData } from '../../../application/ports/ITaskViewRepository';
 ```
 
-- [ ] **Step 3: Handle `TaskUpdated` in tasks projector**
+- [x] **Step 3: Handle `TaskUpdated` in tasks projector**
 
 Open `packages/backend/src/infrastructure/projections/tasks.projector.ts`. Add a new case inside the `switch` block after `TaskPromotedToProject`:
 
@@ -378,7 +378,7 @@ case 'TaskUpdated': {
 }
 ```
 
-- [ ] **Step 4: Add UpdateTaskCommand Zod schema**
+- [x] **Step 4: Add UpdateTaskCommand Zod schema**
 
 Open `packages/backend/src/api/validation/task-commands.schema.ts`. Add inside `taskCommandSchemas`:
 
@@ -393,7 +393,7 @@ UpdateTaskCommand: z.object({
 }),
 ```
 
-- [ ] **Step 5: Register UpdateTaskHandler in composition root**
+- [x] **Step 5: Register UpdateTaskHandler in composition root**
 
 Open `packages/backend/src/infrastructure/composition-root.ts`. Add import:
 
@@ -407,7 +407,7 @@ Add registration after `CreateTaskHandler`:
 commandBus.register('UpdateTaskCommand', new UpdateTaskHandler(eventStore));
 ```
 
-- [ ] **Step 6: Compile check**
+- [x] **Step 6: Compile check**
 
 ```bash
 npx tsc --noEmit -p packages/backend/tsconfig.json
@@ -415,7 +415,7 @@ npx tsc --noEmit -p packages/backend/tsconfig.json
 
 Expected: no errors.
 
-- [ ] **Step 7: Run all backend tests**
+- [x] **Step 7: Run all backend tests**
 
 ```bash
 npx vitest run --project backend
@@ -423,7 +423,7 @@ npx vitest run --project backend
 
 Expected: all pass.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add packages/backend/src/application/ports/ITaskViewRepository.ts
@@ -459,7 +459,7 @@ git commit -m "feat(task): wire UpdateTaskCommand through projector, repo, schem
 
 ---
 
-- [ ] **Step 1: Create DB migration**
+- [x] **Step 1: Create DB migration**
 
 Create `packages/backend/src/db/migrations/002_project_enhancements.sql`:
 
@@ -469,7 +469,7 @@ ALTER TABLE projects_view ADD COLUMN IF NOT EXISTS start_date DATE;
 ALTER TABLE projects_view ALTER COLUMN status SET DEFAULT 'draft';
 ```
 
-- [ ] **Step 2: Register migration in migrate.ts**
+- [x] **Step 2: Register migration in migrate.ts**
 
 Open `packages/backend/src/db/migrate.ts`. After the `001_projections.sql` pool.query call (around line 21), add:
 
@@ -478,7 +478,7 @@ const sql2 = readFileSync(join(__dirname, 'migrations/002_project_enhancements.s
 await pool.query(sql2);
 ```
 
-- [ ] **Step 3: Create the 5 new commands**
+- [x] **Step 3: Create the 5 new commands**
 
 Create `packages/backend/src/domain/project/commands/PlanProjectCommand.ts`:
 ```typescript
@@ -525,7 +525,7 @@ export interface UpdateProjectCommand {
 }
 ```
 
-- [ ] **Step 4: Create the 5 new events**
+- [x] **Step 4: Create the 5 new events**
 
 Create `packages/backend/src/domain/project/events/ProjectPlanned.ts`:
 ```typescript
@@ -582,7 +582,7 @@ export class ProjectUpdated extends DomainEvent {
 }
 ```
 
-- [ ] **Step 5: Rewrite Project.ts**
+- [x] **Step 5: Rewrite Project.ts**
 
 Replace the entire contents of `packages/backend/src/domain/project/Project.ts`:
 
@@ -704,7 +704,7 @@ export class Project {
 }
 ```
 
-- [ ] **Step 6: Compile check**
+- [x] **Step 6: Compile check**
 
 ```bash
 npx tsc --noEmit -p packages/backend/tsconfig.json
@@ -712,7 +712,7 @@ npx tsc --noEmit -p packages/backend/tsconfig.json
 
 Expected: no errors.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add packages/backend/src/db/migrations/002_project_enhancements.sql
@@ -733,7 +733,7 @@ git commit -m "feat(project): add lifecycle commands, events, and updated Projec
 
 ---
 
-- [ ] **Step 1: Write failing specs for all 5 handlers**
+- [x] **Step 1: Write failing specs for all 5 handlers**
 
 Create `packages/backend/src/application/command-handlers/project/PlanProjectHandler.spec.ts`:
 
@@ -905,7 +905,7 @@ describe('UpdateProjectHandler', () => {
 });
 ```
 
-- [ ] **Step 2: Run all 5 specs — expect FAIL**
+- [x] **Step 2: Run all 5 specs — expect FAIL**
 
 ```bash
 npx vitest run packages/backend/src/application/command-handlers/project/
@@ -913,7 +913,7 @@ npx vitest run packages/backend/src/application/command-handlers/project/
 
 Expected: FAIL — "Cannot find module './PlanProjectHandler'" (and others)
 
-- [ ] **Step 3: Create all 5 handlers**
+- [x] **Step 3: Create all 5 handlers**
 
 Create `packages/backend/src/application/command-handlers/project/PlanProjectHandler.ts`:
 ```typescript
@@ -1010,7 +1010,7 @@ export class UpdateProjectHandler {
 }
 ```
 
-- [ ] **Step 4: Run all 5 specs — expect PASS**
+- [x] **Step 4: Run all 5 specs — expect PASS**
 
 ```bash
 npx vitest run packages/backend/src/application/command-handlers/project/
@@ -1018,7 +1018,7 @@ npx vitest run packages/backend/src/application/command-handlers/project/
 
 Expected: PASS (all tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/backend/src/application/command-handlers/project/
@@ -1043,7 +1043,7 @@ git commit -m "feat(project): add Plan/Start/Pause/Resume/Update handlers with s
 
 ---
 
-- [ ] **Step 1: Update IProjectViewRepository**
+- [x] **Step 1: Update IProjectViewRepository**
 
 Replace the entire contents of `packages/backend/src/application/ports/IProjectViewRepository.ts`:
 
@@ -1068,7 +1068,7 @@ export interface IProjectViewRepository {
 }
 ```
 
-- [ ] **Step 2: Implement new methods in PgProjectViewRepository**
+- [x] **Step 2: Implement new methods in PgProjectViewRepository**
 
 Replace the entire contents of `packages/backend/src/infrastructure/persistence/views/PgProjectViewRepository.ts`:
 
@@ -1133,7 +1133,7 @@ export class PgProjectViewRepository implements IProjectViewRepository {
 }
 ```
 
-- [ ] **Step 3: Update projects projector to handle new events**
+- [x] **Step 3: Update projects projector to handle new events**
 
 Replace the entire contents of `packages/backend/src/infrastructure/projections/projects.projector.ts`:
 
@@ -1187,7 +1187,7 @@ export function createProjectsProjector(projectRepo: IProjectViewRepository): Pr
 }
 ```
 
-- [ ] **Step 4: Update IProjectQueryService with new ProjectView fields**
+- [x] **Step 4: Update IProjectQueryService with new ProjectView fields**
 
 Replace `packages/backend/src/application/ports/IProjectQueryService.ts`:
 
@@ -1218,7 +1218,7 @@ export interface IProjectQueryService {
 }
 ```
 
-- [ ] **Step 5: Update PgProjectQueryService with progress + derived status**
+- [x] **Step 5: Update PgProjectQueryService with progress + derived status**
 
 Replace the entire contents of `packages/backend/src/infrastructure/queries/PgProjectQueryService.ts`:
 
@@ -1330,7 +1330,7 @@ export class PgProjectQueryService implements IProjectQueryService {
 }
 ```
 
-- [ ] **Step 6: Add new schemas to project-commands.schema.ts**
+- [x] **Step 6: Add new schemas to project-commands.schema.ts**
 
 Open `packages/backend/src/api/validation/project-commands.schema.ts`. Add inside `projectCommandSchemas`:
 
@@ -1358,7 +1358,7 @@ UpdateProjectCommand: z.object({
 }),
 ```
 
-- [ ] **Step 7: Register all 5 new handlers in composition root**
+- [x] **Step 7: Register all 5 new handlers in composition root**
 
 Open `packages/backend/src/infrastructure/composition-root.ts`. Add imports:
 
@@ -1380,7 +1380,7 @@ commandBus.register('ResumeProjectCommand', new ResumeProjectHandler(eventStore)
 commandBus.register('UpdateProjectCommand', new UpdateProjectHandler(eventStore));
 ```
 
-- [ ] **Step 8: Register migration in migrate.ts**
+- [x] **Step 8: Register migration in migrate.ts**
 
 Open `packages/backend/src/db/migrate.ts`. After the `001_projections.sql` pool.query call, add:
 
@@ -1389,7 +1389,7 @@ const sql2 = readFileSync(join(__dirname, 'migrations/002_project_enhancements.s
 await pool.query(sql2);
 ```
 
-- [ ] **Step 9: Compile check + full test run**
+- [x] **Step 9: Compile check + full test run**
 
 ```bash
 npx tsc --noEmit -p packages/backend/tsconfig.json
@@ -1398,7 +1398,7 @@ npx vitest run --project backend
 
 Expected: no type errors, all tests pass.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add packages/backend/src/application/ports/IProjectViewRepository.ts
@@ -1427,7 +1427,7 @@ git commit -m "feat(project): wire lifecycle commands through repo, projector, q
 
 ---
 
-- [ ] **Step 1: Update queries.ts interfaces**
+- [x] **Step 1: Update queries.ts interfaces**
 
 Open `packages/frontend/src/api/queries.ts`. Replace the `Task` and `Project` interfaces:
 
@@ -1466,7 +1466,7 @@ export interface Project {
 }
 ```
 
-- [ ] **Step 2: Compile check**
+- [x] **Step 2: Compile check**
 
 ```bash
 npx tsc --noEmit -p packages/frontend/tsconfig.json
@@ -1474,7 +1474,7 @@ npx tsc --noEmit -p packages/frontend/tsconfig.json
 
 Expected: no errors (fix any type errors surfaced from the interface changes).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add packages/frontend/src/api/queries.ts
@@ -1494,7 +1494,7 @@ git commit -m "feat(frontend): update Task and Project TypeScript interfaces"
 
 ---
 
-- [ ] **Step 1: Rewrite TaskRow in Tasks.tsx**
+- [x] **Step 1: Rewrite TaskRow in Tasks.tsx**
 
 Open `packages/frontend/src/pages/Tasks.tsx`. Replace the entire `TaskRow` function (lines 10–46) with:
 
@@ -1682,7 +1682,7 @@ function TaskRow({ task }: { task: Task }) {
 }
 ```
 
-- [ ] **Step 2: Add missing imports to Tasks.tsx**
+- [x] **Step 2: Add missing imports to Tasks.tsx**
 
 Ensure these imports are at the top of `packages/frontend/src/pages/Tasks.tsx`:
 
@@ -1695,7 +1695,7 @@ import { useTasks, useCategories, useItems, useResources, useProjects } from '..
 import { dispatch } from '../api/commands';
 ```
 
-- [ ] **Step 3: Compile check**
+- [x] **Step 3: Compile check**
 
 ```bash
 npx tsc --noEmit -p packages/frontend/tsconfig.json
@@ -1703,7 +1703,7 @@ npx tsc --noEmit -p packages/frontend/tsconfig.json
 
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add packages/frontend/src/pages/Tasks.tsx
@@ -1725,7 +1725,7 @@ git commit -m "feat(frontend): add full inline task edit form with items and res
 
 ---
 
-- [ ] **Step 1: Add STATUS_CONFIG constant and ProjectCard to Tasks.tsx**
+- [x] **Step 1: Add STATUS_CONFIG constant and ProjectCard to Tasks.tsx**
 
 Add the following before the `Tasks` export function in `packages/frontend/src/pages/Tasks.tsx`:
 
@@ -1911,7 +1911,7 @@ import type { Task, Project } from '../api/queries';
 import { useTasks, useCategories, useItems, useResources, useProjects } from '../api/queries';
 ```
 
-- [ ] **Step 2: Compile check**
+- [x] **Step 2: Compile check**
 
 ```bash
 npx tsc --noEmit -p packages/frontend/tsconfig.json
@@ -1919,7 +1919,7 @@ npx tsc --noEmit -p packages/frontend/tsconfig.json
 
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add packages/frontend/src/pages/Tasks.tsx
@@ -1941,7 +1941,7 @@ git commit -m "feat(frontend): add ProjectCard and NewProjectRow components"
 
 ---
 
-- [ ] **Step 1: Replace the Tasks export function**
+- [x] **Step 1: Replace the Tasks export function**
 
 Replace the existing `export function Tasks()` in `packages/frontend/src/pages/Tasks.tsx` with:
 
@@ -2006,7 +2006,7 @@ export function Tasks() {
 }
 ```
 
-- [ ] **Step 2: Compile check**
+- [x] **Step 2: Compile check**
 
 ```bash
 npx tsc --noEmit -p packages/frontend/tsconfig.json
@@ -2014,7 +2014,7 @@ npx tsc --noEmit -p packages/frontend/tsconfig.json
 
 Expected: no errors.
 
-- [ ] **Step 3: Run all tests**
+- [x] **Step 3: Run all tests**
 
 ```bash
 npx vitest run
@@ -2022,7 +2022,7 @@ npx vitest run
 
 Expected: all pass.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add packages/frontend/src/pages/Tasks.tsx
@@ -2042,3 +2042,20 @@ git commit -m "feat(frontend): assemble split-view Tasks + Projects page"
 | 5 | 9 | Final split-view page assembly |
 
 Phases 1 and 2 have no dependencies on each other and can be worked in parallel.
+
+---
+
+## Completion Summary
+
+**Date completed:** 2026-06-17
+**Total tasks:** 9 (5 backend, 4 frontend)
+**Total tests:** 207 passing (56 test files)
+**Commits:** 11 commits (938911e → 3a6cf6c)
+
+### Deviations from plan
+
+- **Task 5 boundary fix:** `deriveDisplayStatus` used `daysUntilEnd < 7`; corrected to `<= 7` per spec intent (commit 267404b).
+- **Task 7 project state fix:** `TaskRow` project dropdown initially read `task.project_id` directly (no local state); fixed so Cancel can undo project selection (commit e7c8760).
+- **Task 8 ESLint compliance:** `ProjectCard`/`NewProjectRow` required temporary wiring into the `Tasks` export to satisfy the no-unused-vars hook; replaced in Task 9 with the final split-view layout.
+- **`commands/index.ts` barrel:** Not updated with 5 new project commands — all handlers use direct imports; barrel omission has no runtime impact.
+- **No unit tests for new `Project` lifecycle methods:** Brief only required handler specs; domain invariants are indirectly covered by handler tests.

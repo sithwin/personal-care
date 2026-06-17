@@ -26,7 +26,7 @@ export function CommandBar({ placeholder = '⌘  Search or capture anything...' 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!value.trim() || !categoryId) return;
-    await dispatch('CreateTask', { id: uuidv4(), name: value.trim(), categoryId });
+    await dispatch('CreateTaskCommand', { id: uuidv4(), name: value.trim(), categoryId });
     await qc.invalidateQueries();
     setValue('');
     setOpen(false);
