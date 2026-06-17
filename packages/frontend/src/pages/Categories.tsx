@@ -54,7 +54,12 @@ function CategoryRow({ category }: CategoryRowProps) {
   const [name, setName] = useState(category.name);
   const [color, setColor] = useState(category.color);
 
-  const canDelete = category.task_count === 0 && category.item_count === 0;
+  const canDelete = !category.is_default && category.task_count === 0 && category.item_count === 0;
+  const deleteTitle = category.is_default
+    ? 'Built-in categories cannot be deleted'
+    : category.task_count > 0 || category.item_count > 0
+      ? 'Reassign or remove all tasks and items first'
+      : undefined;
 
   const handleSave = async () => {
     await dispatch('UpdateCategoryCommand', { id: category.id, name, icon, color });
@@ -122,7 +127,7 @@ function CategoryRow({ category }: CategoryRowProps) {
         type="button"
         onClick={handleDelete}
         disabled={!canDelete}
-        title={!canDelete ? 'Reassign or remove all tasks and items first' : undefined}
+        title={deleteTitle}
         className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded hover:bg-red-800 disabled:opacity-30 disabled:cursor-not-allowed"
       >
         Delete

@@ -6,7 +6,29 @@
       "Bash(npx tsc *)",
       "Bash(npm run *)",
       "WebSearch",
-      "Bash(npm test *)"
+      "Bash(npm test *)",
+      "Bash(grep -v \"^d\\\\|commands\\\\|events\\\\|^$\")",
+      "Bash(rm CreateCategory.ts UpdateCategory.ts DeleteCategory.ts)",
+      "Read(//e/e/Projects/personal-care/packages/backend/src/domain/category/**)",
+      "Bash(rm CreateItem.ts MarkItemAvailable.ts MarkItemConsumed.ts MarkItemAvailableAgain.ts)",
+      "Read(//e/e/Projects/personal-care/packages/backend/src/domain/item/**)",
+      "Bash(cd /e/Projects/personal-care && ls packages/backend/src/domain/)",
+      "Read(//e/e/Projects/personal-care/packages/backend/src/**)",
+      "Bash(cd /e/Projects/personal-care/packages/backend/src/domain/task/commands && rm CreateTask.ts StartTask.ts CompleteTask.ts AddItemRequirement.ts AttachResourceToTask.ts DetachResourceFromTask.ts SetTaskRecurrence.ts SkipRecurrence.ts ScheduleTask.ts PromoteToProject.ts && ls)",
+      "Bash(cd /e/Projects/personal-care/packages/backend/src/domain/project/commands && rm CreateProject.ts AddTaskToProject.ts CompleteProject.ts && ls)",
+      "Bash(cd /e/Projects/personal-care/packages/backend/src/domain/resource/commands && rm CreateResource.ts UpdateResource.ts DeleteResource.ts && ls)",
+      "Bash(cd /e/Projects/personal-care && grep -n \"Task 2\" -A 5 docs/superpowers/plans/2026-06-16-api-route-test-coverage.md | head -20)",
+      "Read(//e/e/Projects/personal-care/docs/superpowers/plans/**)",
+      "Bash(cat packages/backend/src/api/routes/items.router.ts)",
+      "Bash(cat packages/backend/src/application/ports/IItemQueryService.ts)",
+      "Bash(npx eslint *)",
+      "Bash(cat packages/backend/src/api/routes/categories.router.ts)",
+      "Bash(cat packages/backend/src/application/ports/ICategoryQueryService.ts)"
+    ],
+    "additionalDirectories": [
+      "e:\\e\\Projects\\personal-care\\packages\\backend\\src\\domain\\task\\commands",
+      "e:\\e\\Projects\\personal-care\\packages\\backend\\src\\domain\\project\\commands",
+      "e:\\e\\Projects\\personal-care\\packages\\backend\\src\\domain\\resource\\commands"
     ]
   }
 }
