@@ -1,13 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchJSON } from './client';
 
+export interface TaskItem {
+  item_id: string;
+  consumable: boolean;
+  item_status: string;
+}
+
+export interface TaskResource {
+  resource_id: string;
+  title: string;
+  type: string;
+}
+
 export interface Task {
   id: string; name: string; description?: string; category_id: string; project_id?: string;
   status: 'ready' | 'ongoing' | 'pending' | 'planned' | 'done';
   estimated_duration_value?: number; estimated_duration_unit?: string;
   due_date?: string; scheduled_date?: string; scheduled_start_time?: string;
   recurrence_rule?: { interval: number; unit: string };
-  completion_count: number; required_items?: unknown[]; resources?: unknown[];
+  completion_count: number;
+  required_items: TaskItem[];
+  resources: TaskResource[];
 }
 
 export interface Item {
@@ -22,7 +36,12 @@ export interface Category {
 
 export interface Project {
   id: string; name: string; description?: string; category_id: string;
-  status: 'active' | 'on_hold' | 'done'; due_date?: string; task_ids: string[];
+  status: 'draft' | 'planned' | 'active' | 'on_hold' | 'done';
+  display_status: 'draft' | 'planned' | 'active' | 'on_hold' | 'done' | 'off_track' | 'at_risk';
+  priority: 'low' | 'medium' | 'high';
+  start_date?: string; due_date?: string;
+  task_ids: string[];
+  progress: number;
 }
 
 export interface Resource {
