@@ -20,6 +20,9 @@ export async function runMigrations(pool: Pool): Promise<void> {
   const sql = readFileSync(join(__dirname, 'migrations/001_projections.sql'), 'utf8');
   await pool.query(sql);
 
+  const sql2 = readFileSync(join(__dirname, 'migrations/002_project_enhancements.sql'), 'utf8');
+  await pool.query(sql2);
+
   console.log('All migrations complete');
 }
 
