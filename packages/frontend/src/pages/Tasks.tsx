@@ -24,8 +24,12 @@ function TaskRow({ task }: { task: Task }) {
     (task.estimated_duration_unit as 'hour' | 'day') ?? 'hour',
   );
   const [dueDate, setDueDate] = useState(task.due_date?.slice(0, 10) ?? '');
+  const [projectId, setProjectId] = useState(task.project_id ?? '');
 
   const handleSave = async () => {
+    if (projectId && projectId !== task.project_id) {
+      await dispatch('AddTaskToProjectCommand', { projectId, taskId: task.id });
+    }
     await dispatch('UpdateTaskCommand', {
       id: task.id,
       name: name.trim() || undefined,
@@ -45,6 +49,7 @@ function TaskRow({ task }: { task: Task }) {
     setDurationValue(String(task.estimated_duration_value ?? ''));
     setDurationUnit((task.estimated_duration_unit as 'hour' | 'day') ?? 'hour');
     setDueDate(task.due_date?.slice(0, 10) ?? '');
+    setProjectId(task.project_id ?? '');
     setEditing(false);
   };
 
@@ -60,12 +65,6 @@ function TaskRow({ task }: { task: Task }) {
 
   const handleDetachResource = async (resourceId: string) => {
     await dispatch('DetachResourceFromTaskCommand', { taskId: task.id, resourceId });
-    await qc.invalidateQueries();
-  };
-
-  const handleAssignProject = async (projectId: string) => {
-    if (!projectId) return;
-    await dispatch('AddTaskToProjectCommand', { projectId, taskId: task.id });
     await qc.invalidateQueries();
   };
 
@@ -97,7 +96,7 @@ function TaskRow({ task }: { task: Task }) {
             className="flex-1 bg-gray-800 text-white px-3 py-2 rounded-lg text-sm outline-none border border-gray-700">
             {categories?.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
           </select>
-          <select value={task.project_id ?? ''} onChange={e => handleAssignProject(e.target.value)}
+          <select value={projectId} onChange={e => setProjectId(e.target.value)}
             className="flex-1 bg-gray-800 text-white px-3 py-2 rounded-lg text-sm outline-none border border-gray-700">
             <option value="">No project</option>
             {projects?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
