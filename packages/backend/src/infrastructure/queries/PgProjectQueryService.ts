@@ -23,7 +23,7 @@ function deriveDisplayStatus(
     const end = new Date(dueDate);
     end.setHours(0, 0, 0, 0);
     const daysUntilEnd = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysUntilEnd < 7 && progress < 0.8) return 'at_risk';
+    if (daysUntilEnd <= 7 && progress < 0.8) return 'at_risk';
   }
 
   return storedStatus;
