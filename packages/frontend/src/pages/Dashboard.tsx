@@ -1,10 +1,44 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useDashboard } from '../api/queries';
+import type { Project } from '../api/queries';
+import { useDashboard, useProjects } from '../api/queries';
 import { CommandBar } from '../components/layout/CommandBar';
+
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  draft:     { label: 'Draft',     color: 'bg-gray-700 text-gray-300' },
+  planned:   { label: 'Planned',   color: 'bg-blue-900 text-blue-300' },
+  active:    { label: 'Active',    color: 'bg-green-900 text-green-300' },
+  off_track: { label: 'Off Track', color: 'bg-red-900 text-red-300' },
+  at_risk:   { label: 'At Risk',   color: 'bg-amber-900 text-amber-300' },
+  on_hold:   { label: 'On Hold',   color: 'bg-gray-700 text-gray-300' },
+  done:      { label: 'Done',      color: 'bg-gray-800 text-gray-500' },
+};
+
+function ProjectItem({ project }: { project: Project }) {
+  const status = STATUS_CONFIG[project.display_status] ?? STATUS_CONFIG.draft!;
+  const progressPct = Math.round(project.progress * 100);
+  return (
+    <div className="flex flex-col gap-2 p-3 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-sm font-medium text-white leading-tight">{project.name}</span>
+        <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${status.color}`}>{status.label}</span>
+      </div>
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>Progress</span><span>{progressPct}%</span>
+        </div>
+        <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+          <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${progressPct}%` }} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Dashboard() {
   const { data, isLoading } = useDashboard();
+  const { data: projects } = useProjects();
+
   if (isLoading) return <div className="text-gray-500">Loading...</div>;
 
   const c = data?.counts;
@@ -15,51 +49,70 @@ export function Dashboard() {
     { label: 'To Buy', value: c?.to_buy_count ?? 0, to: '/items?status=to_buy', color: 'text-orange-400' },
   ];
 
-  return (
-    <div className="flex flex-col gap-6 max-w-3xl">
-      <CommandBar />
+  const activeProjects = projects?.filter(p => p.display_status !== 'done') ?? [];
 
-      <div className="grid grid-cols-4 gap-4">
-        {cards.map(card => (
-          <Link key={card.label} to={card.to} className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-600 transition-colors">
-            <div className={`text-3xl font-bold ${card.color}`}>{card.value}</div>
-            <div className="text-sm text-gray-500 mt-1">{card.label}</div>
-          </Link>
-        ))}
+  return (
+    <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+
+      {/* Left column */}
+      <div className="flex-1 min-w-0 flex flex-col gap-6">
+        <CommandBar />
+
+        <div className="grid grid-cols-4 gap-4">
+          {cards.map(card => (
+            <Link key={card.label} to={card.to} className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-600 transition-colors">
+              <div className={`text-3xl font-bold ${card.color}`}>{card.value}</div>
+              <div className="text-sm text-gray-500 mt-1">{card.label}</div>
+            </Link>
+          ))}
+        </div>
+
+        {(data?.balanceStatus?.length ?? 0) > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase mb-3">Life Balance</h2>
+            <div className="flex flex-wrap gap-2">
+              {data!.balanceStatus.map(b => (
+                <span key={b.rule_id} className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm ${b.is_met ? 'bg-green-900/40 text-green-300' : 'bg-red-900/40 text-red-300'}`}>
+                  {b.is_met ? '✅' : '❌'} {b.category_icon} {b.category_name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(data?.upNext?.length ?? 0) > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase mb-3">Up Next</h2>
+            <div className="flex flex-col gap-2">
+              {data!.upNext.map(task => (
+                <div key={task.id} className="flex items-center gap-3 px-3 py-2 bg-gray-800 rounded-lg text-sm">
+                  <span className="text-gray-400">☐</span>
+                  <span className="flex-1 text-white">{task.name}</span>
+                  {task.estimated_duration_value && (
+                    <span className="text-xs text-gray-500">{task.estimated_duration_value}{task.estimated_duration_unit?.charAt(0)}</span>
+                  )}
+                  {task.due_date && (
+                    <span className="text-xs text-gray-500">{new Date(task.due_date).toLocaleDateString()}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {(data?.balanceStatus?.length ?? 0) > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase mb-3">Life Balance</h2>
-          <div className="flex flex-wrap gap-2">
-            {data!.balanceStatus.map(b => (
-              <span key={b.rule_id} className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm ${b.is_met ? 'bg-green-900/40 text-green-300' : 'bg-red-900/40 text-red-300'}`}>
-                {b.is_met ? '✅' : '❌'} {b.category_icon} {b.category_name}
-              </span>
-            ))}
-          </div>
+      {/* Right column — projects panel */}
+      <div className="w-full lg:w-80 lg:flex-shrink-0 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase">Projects</h2>
+          <Link to="/tasks" className="text-xs text-indigo-400 hover:text-indigo-300">View all →</Link>
         </div>
-      )}
+        {activeProjects.length === 0 && (
+          <p className="text-sm text-gray-600">No active projects.</p>
+        )}
+        {activeProjects.map(p => <ProjectItem key={p.id} project={p} />)}
+      </div>
 
-      {(data?.upNext?.length ?? 0) > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase mb-3">Up Next</h2>
-          <div className="flex flex-col gap-2">
-            {data!.upNext.map(task => (
-              <div key={task.id} className="flex items-center gap-3 px-3 py-2 bg-gray-800 rounded-lg text-sm">
-                <span className="text-gray-400">☐</span>
-                <span className="flex-1 text-white">{task.name}</span>
-                {task.estimated_duration_value && (
-                  <span className="text-xs text-gray-500">{task.estimated_duration_value}{task.estimated_duration_unit?.charAt(0)}</span>
-                )}
-                {task.due_date && (
-                  <span className="text-xs text-gray-500">{new Date(task.due_date).toLocaleDateString()}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
