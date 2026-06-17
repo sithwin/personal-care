@@ -362,31 +362,18 @@ export function Tasks() {
   const [searchParams, setSearchParams] = useSearchParams();
   const status = searchParams.get('status') ?? 'ready';
   const categoryId = searchParams.get('categoryId') ?? undefined;
-  const { data: tasks, isLoading } = useTasks({ status, ...(categoryId ? { categoryId } : {}) });
+  const { data: tasks, isLoading: tasksLoading } = useTasks({ status, ...(categoryId ? { categoryId } : {}) });
+  const { data: projects, isLoading: projectsLoading } = useProjects();
   const { data: categories } = useCategories();
-  const { data: projects } = useProjects();
   const [addingProject, setAddingProject] = useState(false);
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Projects section */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Projects</h2>
-          <button type="button" onClick={() => setAddingProject(true)}
-            className="text-xs px-2 py-1 bg-gray-800 text-gray-400 rounded hover:text-white hover:bg-gray-700">
-            + New
-          </button>
-        </div>
-        <div className="flex gap-3 overflow-x-auto pb-1">
-          {projects?.map(p => <ProjectCard key={p.id} project={p} />)}
-          {addingProject && <NewProjectRow onDone={() => setAddingProject(false)} />}
-        </div>
-      </div>
+    <div className="flex flex-col gap-8">
 
       {/* Tasks section */}
-      <div className="flex flex-col gap-4 max-w-2xl">
-        <div className="flex gap-1 flex-wrap">
+      <section>
+        <h2 className="text-lg font-semibold text-white mb-3">Tasks</h2>
+        <div className="flex gap-1 flex-wrap mb-4">
           {STATUS_TABS.map(s => (
             <button key={s} onClick={() => setSearchParams({ status: s })}
               className={`px-3 py-1.5 rounded-full text-sm capitalize transition-colors ${status === s ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white bg-gray-800'}`}>
@@ -401,12 +388,31 @@ export function Tasks() {
           )}
         </div>
 
-        {isLoading && <div className="text-gray-500 text-sm">Loading...</div>}
-        {!isLoading && tasks?.length === 0 && <div className="text-gray-600 text-sm">No tasks with status &quot;{status}&quot;</div>}
-        <div className="flex flex-col gap-2">
+        {tasksLoading && <div className="text-gray-500 text-sm">Loading...</div>}
+        {!tasksLoading && tasks?.length === 0 && (
+          <div className="text-gray-600 text-sm">No tasks with status &quot;{status}&quot;</div>
+        )}
+        <div className="flex flex-col gap-2 max-w-2xl">
           {tasks?.map(task => <TaskRow key={task.id} task={task} />)}
         </div>
-      </div>
+      </section>
+
+      {/* Projects section */}
+      <section>
+        <h2 className="text-lg font-semibold text-white mb-3">Projects</h2>
+        {projectsLoading && <div className="text-gray-500 text-sm">Loading...</div>}
+        <div className="flex flex-wrap gap-3">
+          {projects?.map(p => <ProjectCard key={p.id} project={p} />)}
+          {addingProject && <NewProjectRow onDone={() => setAddingProject(false)} />}
+        </div>
+        {!addingProject && (
+          <button type="button" onClick={() => setAddingProject(true)}
+            className="mt-3 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-500">
+            + New Project
+          </button>
+        )}
+      </section>
+
     </div>
   );
 }
