@@ -379,6 +379,6 @@ git commit -m "feat(frontend): add inline task creation and actionable rows to U
 
 Update this section when all tasks are done:
 
-- Date completed: —
-- Tasks completed: 0 / 2
-- Deviations from spec: —
+- Date completed: 2026-06-18
+- Tasks completed: 2 / 2
+- Deviations from spec: None
