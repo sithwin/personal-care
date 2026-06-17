@@ -54,6 +54,7 @@ import { SetTaskRecurrenceHandler } from '../application/command-handlers/task/S
 import { SkipRecurrenceHandler } from '../application/command-handlers/task/SkipRecurrenceHandler';
 import { ScheduleTaskHandler } from '../application/command-handlers/task/ScheduleTaskHandler';
 import { PromoteToProjectHandler } from '../application/command-handlers/task/PromoteToProjectHandler';
+import { UpdateTaskHandler } from '../application/command-handlers/task/UpdateTaskHandler';
 import { CreateProjectHandler } from '../application/command-handlers/project/CreateProjectHandler';
 import { AddTaskToProjectHandler } from '../application/command-handlers/project/AddTaskToProjectHandler';
 import { CompleteProjectHandler } from '../application/command-handlers/project/CompleteProjectHandler';
@@ -111,6 +112,7 @@ export function buildDependencies(pool: Pool): AppDependencies {
   commandBus.register('MarkItemAvailableAgainCommand', new MarkItemAvailableAgainHandler(eventStore));
 
   commandBus.register('CreateTaskCommand', new CreateTaskHandler(eventStore));
+  commandBus.register('UpdateTaskCommand', new UpdateTaskHandler(eventStore));
   commandBus.register('StartTaskCommand', new StartTaskHandler(eventStore));
   commandBus.register('CompleteTaskCommand', new CompleteTaskHandler(eventStore));
   commandBus.register('AddItemRequirementCommand', new AddItemRequirementHandler(eventStore));

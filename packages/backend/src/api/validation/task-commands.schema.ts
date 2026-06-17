@@ -47,4 +47,12 @@ export const taskCommandSchemas = {
     taskId: z.string().uuid(),
     projectId: z.string().uuid(),
   }),
+  UpdateTaskCommand: z.object({
+    id: z.string().uuid(),
+    name: z.string().min(1).optional(),
+    categoryId: z.string().uuid().optional(),
+    description: z.string().optional(),
+    estimatedDuration: z.object({ value: z.number(), unit: z.enum(['hour', 'day']) }).optional(),
+    dueDate: z.string().optional(),
+  }),
 };

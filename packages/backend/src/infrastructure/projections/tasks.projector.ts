@@ -72,6 +72,19 @@ export function createTasksProjector(taskRepo: ITaskViewRepository, itemRepo: II
         await taskRepo.setProjectId(p.taskId as string, p.projectId as string);
         break;
 
+      case 'TaskUpdated': {
+        const dur = p.estimatedDuration as { value: number; unit: string } | undefined;
+        await taskRepo.updateFields(p.id as string, {
+          name: (p.name as string | undefined) ?? null,
+          categoryId: (p.categoryId as string | undefined) ?? null,
+          description: (p.description as string | undefined) ?? null,
+          estimatedDurationValue: dur?.value ?? null,
+          estimatedDurationUnit: dur?.unit ?? null,
+          dueDate: (p.dueDate as string | undefined) ?? null,
+        });
+        break;
+      }
+
       default:
         break;
     }

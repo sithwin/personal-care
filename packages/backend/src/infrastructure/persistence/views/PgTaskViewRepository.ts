@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type { ITaskViewRepository, InsertTaskData, TaskViewRow } from '../../../application/ports/ITaskViewRepository';
+import type { ITaskViewRepository, InsertTaskData, TaskViewRow, UpdateTaskData } from '../../../application/ports/ITaskViewRepository';
 
 export class PgTaskViewRepository implements ITaskViewRepository {
   constructor(private readonly pool: Pool) {}
@@ -51,6 +51,22 @@ export class PgTaskViewRepository implements ITaskViewRepository {
 
   async setProjectId(id: string, projectId: string): Promise<void> {
     await this.pool.query('UPDATE tasks_view SET project_id = $1 WHERE id = $2', [projectId, id]);
+  }
+
+  async updateFields(id: string, data: UpdateTaskData): Promise<void> {
+    await this.pool.query(
+      `UPDATE tasks_view SET
+         name = COALESCE($1, name),
+         category_id = COALESCE($2, category_id),
+         description = COALESCE($3, description),
+         estimated_duration_value = COALESCE($4, estimated_duration_value),
+         estimated_duration_unit = COALESCE($5, estimated_duration_unit),
+         due_date = COALESCE($6, due_date)
+       WHERE id = $7`,
+      [data.name, data.categoryId, data.description,
+       data.estimatedDurationValue, data.estimatedDurationUnit,
+       data.dueDate, id],
+    );
   }
 
   async updateStatus(id: string, status: string): Promise<void> {

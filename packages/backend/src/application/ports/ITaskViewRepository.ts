@@ -1,3 +1,12 @@
+export interface UpdateTaskData {
+  name: string | null;
+  categoryId: string | null;
+  description: string | null;
+  estimatedDurationValue: number | null;
+  estimatedDurationUnit: string | null;
+  dueDate: string | null;
+}
+
 export interface InsertTaskData {
   id: string;
   name: string;
@@ -25,6 +34,7 @@ export interface ITaskViewRepository {
   setRecurrence(id: string, recurrenceRule: unknown, dueDate: string | null): Promise<void>;
   setDueDate(id: string, dueDate: string): Promise<void>;
   setProjectId(id: string, projectId: string): Promise<void>;
+  updateFields(id: string, data: UpdateTaskData): Promise<void>;
   updateStatus(id: string, status: string): Promise<void>;
   findById(id: string): Promise<TaskViewRow | null>;
   getItemStatusesForTask(taskId: string): Promise<string[]>;
