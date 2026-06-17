@@ -79,8 +79,8 @@ function TaskRow({ task }: { task: Task }) {
     await qc.invalidateQueries();
   };
 
-  const attachedItemIds = new Set(task.required_items.map(i => i.item_id));
-  const attachedResourceIds = new Set(task.resources.map(r => r.resource_id));
+  const attachedItemIds = new Set((task.required_items ?? []).map(i => i.item_id));
+  const attachedResourceIds = new Set((task.resources ?? []).map(r => r.resource_id));
   const availableItems = allItems?.filter(i => !attachedItemIds.has(i.id)) ?? [];
   const availableResources = allResources?.filter(r => !attachedResourceIds.has(r.id)) ?? [];
 
@@ -137,7 +137,7 @@ function TaskRow({ task }: { task: Task }) {
         {/* Resources */}
         <div className="flex flex-col gap-1">
           <span className="text-xs text-gray-500 uppercase tracking-wide">Resources</span>
-          {task.resources.map(r => (
+          {(task.resources ?? []).map(r => (
             <div key={r.resource_id} className="flex items-center gap-2">
               <span className="flex-1 text-xs text-gray-400 px-2 py-1 bg-gray-800 rounded">{r.title}</span>
               <button type="button" onClick={() => handleDetachResource(r.resource_id)}
