@@ -249,7 +249,7 @@ function ProjectCard({ project }: { project: Project }) {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 bg-gray-900 border border-gray-800 rounded-xl w-56 flex-shrink-0 hover:border-gray-700 transition-colors">
+    <div className="flex flex-col gap-3 p-4 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
       <div>
         <div className="text-sm font-semibold text-white">
           {cat?.icon} {project.name}
@@ -332,7 +332,7 @@ function NewProjectRow({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <div className="flex flex-col gap-2 p-4 bg-gray-900 border border-indigo-700 border-dashed rounded-xl w-56 flex-shrink-0">
+    <div className="flex flex-col gap-2 p-4 bg-gray-900 border border-indigo-700 border-dashed rounded-xl">
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Project name..." autoFocus
         className="w-full bg-gray-800 text-white px-3 py-2 rounded-lg text-sm outline-none border border-gray-700 focus:border-indigo-500" />
       <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
@@ -368,10 +368,10 @@ export function Tasks() {
   const [addingProject, setAddingProject] = useState(false);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col lg:flex-row lg:items-start gap-8">
 
       {/* Tasks section */}
-      <section>
+      <section className="flex-1 min-w-0">
         <h2 className="text-lg font-semibold text-white mb-3">Tasks</h2>
         <div className="flex gap-1 flex-wrap mb-4">
           {STATUS_TABS.map(s => (
@@ -398,10 +398,10 @@ export function Tasks() {
       </section>
 
       {/* Projects section */}
-      <section>
+      <section className="w-full lg:w-80 lg:flex-shrink-0 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
         <h2 className="text-lg font-semibold text-white mb-3">Projects</h2>
         {projectsLoading && <div className="text-gray-500 text-sm">Loading...</div>}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-3">
           {projects?.map(p => <ProjectCard key={p.id} project={p} />)}
           {addingProject && <NewProjectRow onDone={() => setAddingProject(false)} />}
         </div>
