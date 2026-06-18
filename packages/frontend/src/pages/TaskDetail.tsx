@@ -20,12 +20,14 @@ export function TaskDetail() {
     return <div className="text-gray-500 text-sm">Loading...</div>;
   }
 
-  const handleSave = async (data: TaskFormData) => {
-    if (data.projectId && data.projectId !== task.project_id) {
-      await dispatch('AddTaskToProjectCommand', { projectId: data.projectId, taskId: task.id });
+  const taskRef = task;
+
+  async function handleSave(data: TaskFormData) {
+    if (data.projectId && data.projectId !== taskRef.project_id) {
+      await dispatch('AddTaskToProjectCommand', { projectId: data.projectId, taskId: taskRef.id });
     }
     await dispatch('UpdateTaskCommand', {
-      id: task.id,
+      id: taskRef.id,
       name: data.name,
       categoryId: data.categoryId,
       description: data.description,
@@ -33,48 +35,48 @@ export function TaskDetail() {
       dueDate: data.dueDate,
     });
     await qc.invalidateQueries();
-  };
+  }
 
-  const handleStart = async () => {
-    await dispatch('StartTaskCommand', { id: task.id });
+  async function handleStart() {
+    await dispatch('StartTaskCommand', { id: taskRef.id });
     await qc.invalidateQueries();
-  };
+  }
 
-  const handleComplete = async () => {
-    await dispatch('CompleteTaskCommand', { id: task.id, itemDisposals: [] });
+  async function handleComplete() {
+    await dispatch('CompleteTaskCommand', { id: taskRef.id, itemDisposals: [] });
     await qc.invalidateQueries();
-  };
+  }
 
   const itemActions: ItemActions = {
     onAddExisting: async (itemId) => {
-      await dispatch('AddItemRequirementCommand', { taskId: task.id, itemId, consumable: true });
+      await dispatch('AddItemRequirementCommand', { taskId: taskRef.id, itemId, consumable: true });
       await qc.invalidateQueries();
     },
     onAddNew: async (name, categoryId) => {
       const itemId = uuidv4();
       await dispatch('CreateItemCommand', { id: itemId, name, categoryId });
-      await dispatch('AddItemRequirementCommand', { taskId: task.id, itemId, consumable: true });
+      await dispatch('AddItemRequirementCommand', { taskId: taskRef.id, itemId, consumable: true });
       await qc.invalidateQueries();
     },
     onRemove: async (itemId) => {
-      await dispatch('RemoveItemRequirementCommand', { taskId: task.id, itemId });
+      await dispatch('RemoveItemRequirementCommand', { taskId: taskRef.id, itemId });
       await qc.invalidateQueries();
     },
   };
 
   const resourceActions: ResourceActions = {
     onAddExisting: async (resourceId) => {
-      await dispatch('AttachResourceToTaskCommand', { taskId: task.id, resourceId });
+      await dispatch('AttachResourceToTaskCommand', { taskId: taskRef.id, resourceId });
       await qc.invalidateQueries();
     },
     onAddNew: async (title, type, url) => {
       const resourceId = uuidv4();
       await dispatch('CreateResourceCommand', { id: resourceId, title, type, url });
-      await dispatch('AttachResourceToTaskCommand', { taskId: task.id, resourceId });
+      await dispatch('AttachResourceToTaskCommand', { taskId: taskRef.id, resourceId });
       await qc.invalidateQueries();
     },
     onRemove: async (resourceId) => {
-      await dispatch('DetachResourceFromTaskCommand', { taskId: task.id, resourceId });
+      await dispatch('DetachResourceFromTaskCommand', { taskId: taskRef.id, resourceId });
       await qc.invalidateQueries();
     },
   };
