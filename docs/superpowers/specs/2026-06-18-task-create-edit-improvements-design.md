@@ -85,7 +85,7 @@ Fetches categories, projects, items, resources. Renders `TaskForm` in create mod
 
 Becomes a thin wrapper: loads task data, fetches all items/resources, renders `TaskForm` in edit mode.
 
-In edit mode, `TaskForm` dispatches commands immediately on each user action (same behaviour as today for details save, item add/remove, resource attach/detach). The `onSubmit` callback in edit mode fires `UpdateTaskCommand` and, if project changed, `AddTaskToProjectCommand`.
+In edit mode, `TaskForm` dispatches commands immediately on each user action for items and resources (add/remove fires at click time, not on form submit). The `pendingItems` and `pendingResources` fields in `TaskFormData` are unused in edit mode — `onSubmit` only carries the detail fields. The `onSubmit` callback fires `UpdateTaskCommand` and, if project changed, `AddTaskToProjectCommand`.
 
 ---
 
@@ -109,7 +109,7 @@ In edit mode, `TaskForm` dispatches commands immediately on each user action (sa
 
 - Category defaults to the task's current category but is editable.
 - Pressing Add:
-  - **Create mode:** appends `{ type: 'new', name, categoryId }` to the local pending list and collapses the sub-form. The pending item is shown in the attached list with a "pending" indicator and an × to remove it before submit.
+  - **Create mode:** appends `{ type: 'new', name, categoryId }` to the local pending list and collapses the sub-form. The pending item is shown in the attached list in italic/dimmed text with a "•" prefix to distinguish it from confirmed items, plus an × to remove it before submit.
   - **Edit mode:** fires `CreateItemCommand` → `AddItemRequirementCommand` immediately, then invalidates queries.
 
 ---
@@ -134,8 +134,9 @@ In edit mode, `TaskForm` dispatches commands immediately on each user action (sa
 
 ## Error Handling
 
-- Command failures surface as inline error messages (same pattern used elsewhere).
-- If any command in the create-page batch fails, the task may be partially created. The page navigates to `/tasks/:id` regardless so the user can retry attaching items/resources from the edit page.
+- The create page wraps the submit sequence in a try/catch. On failure it shows an inline error string below the submit button (e.g. "Failed to create task — please try again.") and stays on `/tasks/new`.
+- If the task is created but a subsequent item/resource attachment fails, the page still navigates to `/tasks/:id` so the user can retry from the edit page. The error is logged to the console.
+- Edit-mode immediate-dispatch actions (add/remove item, add/remove resource) show no explicit error UI for now — same as the current behaviour.
 
 ---
 
