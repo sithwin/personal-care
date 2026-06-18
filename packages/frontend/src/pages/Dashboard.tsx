@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { Project, Task } from '../api/queries';
 import { useDashboard, useProjects } from '../api/queries';
 import { dispatch } from '../api/commands';
-import { CommandBar } from '../components/layout/CommandBar';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',     color: 'bg-gray-700 text-gray-300' },
@@ -97,8 +96,6 @@ export function Dashboard() {
 
       {/* Left column */}
       <div className="flex-1 min-w-0 flex flex-col gap-6">
-        <CommandBar />
-
         <div className="grid grid-cols-4 gap-4">
           {cards.map(card => (
             <Link key={card.label} to={card.to} className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-600 transition-colors">
