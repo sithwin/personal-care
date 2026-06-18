@@ -33,7 +33,11 @@ async function main(): Promise<void> {
   await seed(deps.commandBus, pool);
 
   logger.info('Bootstrapping search index…');
-  await bootstrapSearchIndex(deps.searchIndexer, pool);
+  try {
+    await bootstrapSearchIndex(deps.searchIndexer, pool);
+  } catch (err) {
+    logger.warn({ err }, 'Search index bootstrap failed — search may be unavailable until next restart');
+  }
 
   const app = express();
 

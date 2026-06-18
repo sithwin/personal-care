@@ -32,17 +32,16 @@ describe('tasks-search projector', () => {
     });
   });
 
-  it('TaskUpdated upserts with new name and description', async () => {
+  it('TaskUpdated patches name, description, and categoryId', async () => {
     await projector(makeEvent('TaskUpdated', { id: TASK_ID, name: 'Fixed sink', description: 'Done', categoryId: CAT_ID }));
-    expect(indexer.upsert).toHaveBeenCalledWith({
-      id: `task-${TASK_ID}`,
-      entityId: TASK_ID,
-      type: 'task',
-      name: 'Fixed sink',
-      description: 'Done',
-      status: null,
-      categoryId: CAT_ID,
-    });
+    expect(indexer.patch).toHaveBeenCalledWith(`task-${TASK_ID}`, { name: 'Fixed sink', description: 'Done', categoryId: CAT_ID });
+    expect(indexer.upsert).not.toHaveBeenCalled();
+  });
+
+  it('TaskUpdated with only name patches only name', async () => {
+    await projector(makeEvent('TaskUpdated', { id: TASK_ID, name: 'New name' }));
+    expect(indexer.patch).toHaveBeenCalledWith(`task-${TASK_ID}`, { name: 'New name' });
+    expect(indexer.upsert).not.toHaveBeenCalled();
   });
 
   it('TaskStarted patches status to ongoing', async () => {

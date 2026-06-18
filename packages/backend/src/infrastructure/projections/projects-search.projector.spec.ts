@@ -56,4 +56,9 @@ describe('projects-search projector', () => {
     await projector(makeEvent('ProjectCompleted', { id: PROJECT_ID }));
     expect(indexer.patch).toHaveBeenCalledWith(`project-${PROJECT_ID}`, { status: 'done' });
   });
+
+  it('ProjectPlanned patches status to planned', async () => {
+    await projector(makeEvent('ProjectPlanned', { id: PROJECT_ID }));
+    expect(indexer.patch).toHaveBeenCalledWith(`project-${PROJECT_ID}`, { status: 'planned' });
+  });
 });
