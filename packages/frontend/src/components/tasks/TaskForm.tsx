@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Task, Item, Category, Project, Resource } from '../../api/queries';
 
 type ResourceType = 'link' | 'note' | 'video' | 'file' | 'doc';
@@ -96,11 +96,11 @@ export function TaskForm({
     try {
       await onSubmit({
         name: name.trim(),
-        description: description || undefined,
+        description: mode === 'create' ? (description || undefined) : description,
         categoryId,
         projectId: projectId || undefined,
         estimatedDuration: durationValue ? { value: Number(durationValue), unit: durationUnit } : undefined,
-        dueDate: dueDate || undefined,
+        dueDate: mode === 'create' ? (dueDate || undefined) : dueDate,
         pendingItems,
         pendingResources,
       });
@@ -173,7 +173,6 @@ export function TaskForm({
   return (
     <div className="flex flex-col gap-6">
 
-      {/* Detail fields */}
       <div className="flex flex-col gap-3 bg-gray-900 border border-gray-800 rounded-xl p-4">
         <h2 className="text-sm font-semibold text-gray-400 uppercase">Details</h2>
 
@@ -220,7 +219,6 @@ export function TaskForm({
         </div>
       </div>
 
-      {/* Items section */}
       <div className="flex flex-col gap-3 bg-gray-900 border border-gray-800 rounded-xl p-4">
         <h2 className="text-sm font-semibold text-gray-400 uppercase">Items Required</h2>
 
@@ -296,7 +294,6 @@ export function TaskForm({
         )}
       </div>
 
-      {/* Resources section */}
       <div className="flex flex-col gap-3 bg-gray-900 border border-gray-800 rounded-xl p-4">
         <h2 className="text-sm font-semibold text-gray-400 uppercase">Resources</h2>
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,9 +30,9 @@ export function TaskDetail() {
       name: data.name,
       categoryId: data.categoryId,
       description: data.description,
-      estimatedDuration: data.estimatedDuration as Record<string, unknown> | undefined,
+      estimatedDuration: data.estimatedDuration,
       dueDate: data.dueDate,
-    });
+    } as Record<string, unknown>);
     await qc.invalidateQueries();
   }
 

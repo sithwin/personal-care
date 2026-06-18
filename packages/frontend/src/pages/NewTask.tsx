@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,9 +25,9 @@ export function NewTask() {
       categoryId: data.categoryId,
       description: data.description,
       projectId: data.projectId,
-      estimatedDuration: data.estimatedDuration as Record<string, unknown> | undefined,
+      estimatedDuration: data.estimatedDuration,
       dueDate: data.dueDate,
-    });
+    } as Record<string, unknown>);
 
     try {
       for (const pending of data.pendingItems) {
