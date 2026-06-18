@@ -79,3 +79,24 @@ export const useSuggestions = (hours: number, categoryId?: string) => useQuery({
   },
   enabled: hours > 0,
 });
+
+export interface SearchHit {
+  entityId: string;
+  type: 'task' | 'project' | 'item';
+  name: string;
+  status: string | null;
+  categoryId: string | null;
+}
+
+export interface SearchResults {
+  tasks: SearchHit[];
+  projects: SearchHit[];
+  items: SearchHit[];
+}
+
+export const useSearch = (q: string) => useQuery({
+  queryKey: ['search', q],
+  queryFn: () => fetchJSON<SearchResults>(`/search?q=${encodeURIComponent(q)}`),
+  enabled: q.length >= 2,
+  staleTime: 10_000,
+});
