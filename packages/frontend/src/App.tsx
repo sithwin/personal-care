@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
+import { TaskDetail } from './pages/TaskDetail';
 import { Items } from './pages/Items';
 import { Calendar } from './pages/Calendar';
 import { Suggest } from './pages/Suggest';
@@ -18,6 +19,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/tasks" element={<Tasks />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
           <Route path="/items" element={<Items />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/suggest" element={<Suggest />} />

@@ -109,7 +109,7 @@ function UpNextRow({ task }: { task: Task }) {
         {task.status === 'done' ? '✅' : '☐'}
       </button>
       <Link
-        to={`/tasks?status=${task.status}`}
+        to={`/tasks/${task.id}`}
         className="flex-1 text-white hover:text-indigo-300 transition-colors"
       >
         {task.name}
