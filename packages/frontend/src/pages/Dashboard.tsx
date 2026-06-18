@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Project, Task } from '../api/queries';
-import { useDashboard, useProjects, useCategories } from '../api/queries';
+import { useDashboard, useProjects } from '../api/queries';
 import { dispatch } from '../api/commands';
 import { CommandBar } from '../components/layout/CommandBar';
 
@@ -33,53 +32,6 @@ function ProjectItem({ project }: { project: Project }) {
         <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
           <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${progressPct}%` }} />
         </div>
-      </div>
-    </div>
-  );
-}
-
-function NewTaskRow({ onDone }: { onDone: () => void }) {
-  const qc = useQueryClient();
-  const { data: categories } = useCategories();
-  const [name, setName] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-
-  useEffect(() => {
-    if (!categoryId && categories?.[0]) setCategoryId(categories[0].id);
-  }, [categories, categoryId]);
-
-  const handleCreate = async () => {
-    await dispatch('CreateTaskCommand', { id: uuidv4(), name: name.trim(), categoryId });
-    await qc.invalidateQueries();
-    onDone();
-  };
-
-  return (
-    <div className="flex flex-col gap-2 p-3 bg-gray-900 border border-indigo-700 border-dashed rounded-lg">
-      <input
-        value={name}
-        onChange={e => setName(e.target.value)}
-        placeholder="Task name..."
-        autoFocus
-        className="w-full bg-gray-800 text-white px-3 py-2 rounded-lg text-sm outline-none border border-gray-700 focus:border-indigo-500"
-      />
-      <select
-        value={categoryId}
-        onChange={e => setCategoryId(e.target.value)}
-        className="w-full bg-gray-800 text-white px-3 py-2 rounded-lg text-sm outline-none border border-gray-700"
-      >
-        {categories?.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-      </select>
-      <div className="flex gap-2 justify-end">
-        <button type="button" onClick={onDone} className="px-2 py-1.5 text-xs text-gray-400 hover:text-white">Cancel</button>
-        <button
-          type="button"
-          onClick={handleCreate}
-          disabled={!name.trim() || !categoryId}
-          className="px-2 py-1.5 text-xs bg-indigo-600 text-white rounded-lg disabled:opacity-40 hover:bg-indigo-500"
-        >
-          Add task
-        </button>
       </div>
     </div>
   );
@@ -127,7 +79,7 @@ function UpNextRow({ task }: { task: Task }) {
 export function Dashboard() {
   const { data, isLoading } = useDashboard();
   const { data: projects } = useProjects();
-  const [addingTask, setAddingTask] = useState(false);
+  const navigate = useNavigate();
 
   if (isLoading) return <div className="text-gray-500">Loading...</div>;
 
@@ -173,20 +125,17 @@ export function Dashboard() {
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-400 uppercase">Up Next</h2>
-            {!addingTask && (
-              <button
-                type="button"
-                onClick={() => setAddingTask(true)}
-                className="text-xs px-2 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500"
-              >
-                + Add Task
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => navigate('/tasks/new')}
+              className="text-xs px-2 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500"
+            >
+              + Add Task
+            </button>
           </div>
           <div className="flex flex-col gap-2">
-            {addingTask && <NewTaskRow onDone={() => setAddingTask(false)} />}
             {(data?.upNext ?? []).map(task => <UpNextRow key={task.id} task={task} />)}
-            {!addingTask && (data?.upNext?.length ?? 0) === 0 && (
+            {(data?.upNext?.length ?? 0) === 0 && (
               <p className="text-sm text-gray-600">No tasks up next.</p>
             )}
           </div>
