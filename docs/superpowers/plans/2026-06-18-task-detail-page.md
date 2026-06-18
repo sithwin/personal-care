@@ -737,6 +737,6 @@ git commit -m "feat(frontend): wire TaskDetail route and update navigation"
 
 Update this section when all tasks are done:
 
-- Date completed: —
-- Tasks completed: 0 / 3
-- Deviations from spec: —
+- Date completed: 2026-06-18
+- Tasks completed: 3 / 3
+- Deviations from spec: Spec incorrectly named DB table `task_required_items`; implementation correctly uses `task_items_view`. Route registration note in spec was also incorrect (tasks.router.ts is query-only; command dispatched via generic `/commands/:type` pattern).
