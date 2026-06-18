@@ -16,6 +16,8 @@ import { makeResourcesRouter } from './api/routes/resources.router';
 import { makeBalanceRouter } from './api/routes/balance.router';
 import { makeDashboardRouter } from './api/routes/dashboard.router';
 import { makeSuggestRouter } from './api/routes/suggest.router';
+import { makeSearchRouter } from './api/routes/search.router';
+import { bootstrapSearchIndex } from './infrastructure/search/bootstrapSearchIndex';
 import { errorHandler } from './api/middleware/error-handler';
 import { seed } from './seed/seed';
 
@@ -29,6 +31,9 @@ async function main(): Promise<void> {
 
   logger.info('Running seed…');
   await seed(deps.commandBus, pool);
+
+  logger.info('Bootstrapping search index…');
+  await bootstrapSearchIndex(deps.searchIndexer, pool);
 
   const app = express();
 
@@ -52,6 +57,7 @@ async function main(): Promise<void> {
   app.use('/api/v1/balance',    makeBalanceRouter(deps.balanceQueryService));
   app.use('/api/v1/dashboard',  makeDashboardRouter(deps.dashboardQueryService));
   app.use('/api/v1/suggest',    makeSuggestRouter(deps.suggestQueryService));
+  app.use('/api/v1/search',    makeSearchRouter(deps.searchQueryService));
 
   // Internal / infrastructure routes — no version prefix
   app.use('/commands', makeCommandsRouter(deps.commandBus));

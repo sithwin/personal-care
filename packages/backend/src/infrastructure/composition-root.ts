@@ -34,6 +34,13 @@ import type { IResourceQueryService } from '../application/ports/IResourceQueryS
 import type { IBalanceQueryService } from '../application/ports/IBalanceQueryService';
 import type { IDashboardQueryService } from '../application/ports/IDashboardQueryService';
 import type { ISuggestQueryService } from '../application/ports/ISuggestQueryService';
+import { MeilisearchSearchIndexer } from './search/MeilisearchSearchIndexer';
+import { MeilisearchSearchQueryService } from './queries/MeilisearchSearchQueryService';
+import { createTasksSearchProjector } from './projections/tasks-search.projector';
+import { createItemsSearchProjector } from './projections/items-search.projector';
+import { createProjectsSearchProjector } from './projections/projects-search.projector';
+import type { ISearchQueryService } from '../application/ports/ISearchQueryService';
+import { env } from '../config/env';
 import { CreateBalanceRuleHandler } from '../application/command-handlers/balance-rule/CreateBalanceRuleHandler';
 import { UpdateBalanceRuleHandler } from '../application/command-handlers/balance-rule/UpdateBalanceRuleHandler';
 import { DeleteBalanceRuleHandler } from '../application/command-handlers/balance-rule/DeleteBalanceRuleHandler';
@@ -79,6 +86,8 @@ export interface AppDependencies {
   balanceQueryService: IBalanceQueryService;
   dashboardQueryService: IDashboardQueryService;
   suggestQueryService: ISuggestQueryService;
+  searchQueryService: ISearchQueryService;
+  searchIndexer: MeilisearchSearchIndexer;
 }
 
 export function buildDependencies(pool: Pool): AppDependencies {
@@ -92,6 +101,8 @@ export function buildDependencies(pool: Pool): AppDependencies {
   const balanceViewRepo = new PgBalanceViewRepository(pool);
   const dashboardViewRepo = new PgDashboardViewRepository(pool);
 
+  const searchIndexer = new MeilisearchSearchIndexer(env.MEILISEARCH_URL, env.MEILISEARCH_API_KEY);
+
   const runProjectors = createProjectorRunner([
     createCategoriesProjector(categoryViewRepo),
     createItemsProjector(itemViewRepo, taskViewRepo),
@@ -100,6 +111,9 @@ export function buildDependencies(pool: Pool): AppDependencies {
     createResourcesProjector(resourceViewRepo),
     createBalanceProjector(balanceViewRepo),
     createDashboardProjector(dashboardViewRepo),
+    createTasksSearchProjector(searchIndexer),
+    createItemsSearchProjector(searchIndexer),
+    createProjectsSearchProjector(searchIndexer),
   ]);
 
   const commandBus = new CommandBus(runProjectors);
@@ -154,5 +168,7 @@ export function buildDependencies(pool: Pool): AppDependencies {
     balanceQueryService: new PgBalanceQueryService(pool),
     dashboardQueryService: new PgDashboardQueryService(pool),
     suggestQueryService: new PgSuggestQueryService(pool),
+    searchQueryService: new MeilisearchSearchQueryService(env.MEILISEARCH_URL, env.MEILISEARCH_API_KEY),
+    searchIndexer,
   };
 }

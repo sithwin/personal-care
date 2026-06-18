@@ -1,12 +1,12 @@
-import { MeiliSearch } from 'meilisearch';
+import { Meilisearch } from 'meilisearch';
 import type { ISearchIndexer, SearchDocument } from '../../application/ports/ISearchIndexer';
 
 export class MeilisearchSearchIndexer implements ISearchIndexer {
-  private readonly client: MeiliSearch;
+  private readonly client: Meilisearch;
   private readonly indexName = 'personal_care';
 
   constructor(url: string, apiKey: string) {
-    this.client = new MeiliSearch({ host: url, apiKey });
+    this.client = new Meilisearch({ host: url, apiKey });
   }
 
   async ensureIndex(): Promise<void> {

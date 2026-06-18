@@ -14,7 +14,7 @@ const mockIndex = vi.fn().mockReturnValue({
 });
 
 vi.mock('meilisearch', () => ({
-  MeiliSearch: vi.fn().mockImplementation(() => ({ index: mockIndex })),
+  Meilisearch: vi.fn().mockImplementation(() => ({ index: mockIndex })),
 }));
 
 import { MeilisearchSearchIndexer } from './MeilisearchSearchIndexer';
