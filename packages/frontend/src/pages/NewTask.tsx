@@ -17,7 +17,7 @@ export function NewTask() {
 
   if (!categories) return <div className="text-gray-500 text-sm">Loading...</div>;
 
-  const handleSubmit = async (data: TaskFormData) => {
+  async function handleSubmit(data: TaskFormData) {
     const taskId = uuidv4();
 
     await dispatch('CreateTaskCommand', {
@@ -55,7 +55,7 @@ export function NewTask() {
 
     await qc.invalidateQueries();
     navigate(`/tasks/${taskId}`);
-  };
+  }
 
   return (
     <div className="max-w-2xl flex flex-col gap-6">
