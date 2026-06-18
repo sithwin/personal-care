@@ -4,6 +4,7 @@ import type { CreateTaskCommand } from './commands/CreateTaskCommand';
 import type { StartTaskCommand } from './commands/StartTaskCommand';
 import type { CompleteTaskCommand } from './commands/CompleteTaskCommand';
 import type { AddItemRequirementCommand } from './commands/AddItemRequirementCommand';
+import type { RemoveItemRequirementCommand } from './commands/RemoveItemRequirementCommand';
 import type { AttachResourceToTaskCommand } from './commands/AttachResourceToTaskCommand';
 import type { DetachResourceFromTaskCommand } from './commands/DetachResourceFromTaskCommand';
 import type { SetTaskRecurrenceCommand } from './commands/SetTaskRecurrenceCommand';
@@ -16,6 +17,7 @@ import { TaskStarted } from './events/TaskStarted';
 import { TaskCompleted } from './events/TaskCompleted';
 import { TaskRescheduled } from './events/TaskRescheduled';
 import { ItemRequirementAdded } from './events/ItemRequirementAdded';
+import { ItemRequirementRemoved } from './events/ItemRequirementRemoved';
 import { ResourceAttachedToTask } from './events/ResourceAttachedToTask';
 import { ResourceDetachedFromTask } from './events/ResourceDetachedFromTask';
 import { TaskRecurrenceSet } from './events/TaskRecurrenceSet';
@@ -108,6 +110,10 @@ export class Task {
 
   addItemRequirement(cmd: AddItemRequirementCommand): ItemRequirementAdded {
     return new ItemRequirementAdded(cmd.payload);
+  }
+
+  removeItemRequirement(cmd: RemoveItemRequirementCommand): ItemRequirementRemoved {
+    return new ItemRequirementRemoved(cmd.payload);
   }
 
   attachResource(cmd: AttachResourceToTaskCommand): ResourceAttachedToTask {

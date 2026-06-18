@@ -48,6 +48,7 @@ import { CreateTaskHandler } from '../application/command-handlers/task/CreateTa
 import { StartTaskHandler } from '../application/command-handlers/task/StartTaskHandler';
 import { CompleteTaskHandler } from '../application/command-handlers/task/CompleteTaskHandler';
 import { AddItemRequirementHandler } from '../application/command-handlers/task/AddItemRequirementHandler';
+import { RemoveItemRequirementHandler } from '../application/command-handlers/task/RemoveItemRequirementHandler';
 import { AttachResourceToTaskHandler } from '../application/command-handlers/task/AttachResourceToTaskHandler';
 import { DetachResourceFromTaskHandler } from '../application/command-handlers/task/DetachResourceFromTaskHandler';
 import { SetTaskRecurrenceHandler } from '../application/command-handlers/task/SetTaskRecurrenceHandler';
@@ -121,6 +122,7 @@ export function buildDependencies(pool: Pool): AppDependencies {
   commandBus.register('StartTaskCommand', new StartTaskHandler(eventStore));
   commandBus.register('CompleteTaskCommand', new CompleteTaskHandler(eventStore));
   commandBus.register('AddItemRequirementCommand', new AddItemRequirementHandler(eventStore));
+  commandBus.register('RemoveItemRequirementCommand', new RemoveItemRequirementHandler(eventStore));
   commandBus.register('AttachResourceToTaskCommand', new AttachResourceToTaskHandler(eventStore));
   commandBus.register('DetachResourceFromTaskCommand', new DetachResourceFromTaskHandler(eventStore));
   commandBus.register('SetTaskRecurrenceCommand', new SetTaskRecurrenceHandler(eventStore));

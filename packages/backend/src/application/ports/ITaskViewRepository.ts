@@ -39,6 +39,7 @@ export interface ITaskViewRepository {
   findById(id: string): Promise<TaskViewRow | null>;
   getItemStatusesForTask(taskId: string): Promise<string[]>;
   insertItemRequirement(taskId: string, itemId: string, consumable: boolean, itemStatus: string): Promise<void>;
+  deleteItemRequirement(taskId: string, itemId: string): Promise<void>;
   updateItemStatusForItem(itemId: string, status: string): Promise<void>;
   getTaskIdsForItem(itemId: string): Promise<string[]>;
 }

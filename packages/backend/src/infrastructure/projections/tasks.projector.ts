@@ -54,6 +54,11 @@ export function createTasksProjector(taskRepo: ITaskViewRepository, itemRepo: II
         break;
       }
 
+      case 'ItemRequirementRemoved':
+        await taskRepo.deleteItemRequirement(p.taskId as string, p.itemId as string);
+        await refreshTaskStatus(p.taskId as string, taskRepo);
+        break;
+
       case 'TaskScheduled':
         await taskRepo.setSchedule(p.id as string, p.scheduledDate as string, p.scheduledStartTime as string);
         break;

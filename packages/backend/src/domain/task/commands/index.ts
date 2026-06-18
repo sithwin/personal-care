@@ -2,6 +2,7 @@ export type { CreateTaskCommand } from './CreateTaskCommand';
 export type { StartTaskCommand } from './StartTaskCommand';
 export type { CompleteTaskCommand } from './CompleteTaskCommand';
 export type { AddItemRequirementCommand } from './AddItemRequirementCommand';
+export type { RemoveItemRequirementCommand } from './RemoveItemRequirementCommand';
 export type { AttachResourceToTaskCommand } from './AttachResourceToTaskCommand';
 export type { DetachResourceFromTaskCommand } from './DetachResourceFromTaskCommand';
 export type { SetTaskRecurrenceCommand } from './SetTaskRecurrenceCommand';
@@ -13,6 +14,7 @@ import type { CreateTaskCommand } from './CreateTaskCommand';
 import type { StartTaskCommand } from './StartTaskCommand';
 import type { CompleteTaskCommand } from './CompleteTaskCommand';
 import type { AddItemRequirementCommand } from './AddItemRequirementCommand';
+import type { RemoveItemRequirementCommand } from './RemoveItemRequirementCommand';
 import type { AttachResourceToTaskCommand } from './AttachResourceToTaskCommand';
 import type { DetachResourceFromTaskCommand } from './DetachResourceFromTaskCommand';
 import type { SetTaskRecurrenceCommand } from './SetTaskRecurrenceCommand';
@@ -25,6 +27,7 @@ export type TaskCommand =
   | StartTaskCommand
   | CompleteTaskCommand
   | AddItemRequirementCommand
+  | RemoveItemRequirementCommand
   | AttachResourceToTaskCommand
   | DetachResourceFromTaskCommand
   | SetTaskRecurrenceCommand

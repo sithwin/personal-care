@@ -104,6 +104,13 @@ export class PgTaskViewRepository implements ITaskViewRepository {
     );
   }
 
+  async deleteItemRequirement(taskId: string, itemId: string): Promise<void> {
+    await this.pool.query(
+      'DELETE FROM task_items_view WHERE task_id = $1 AND item_id = $2',
+      [taskId, itemId]
+    );
+  }
+
   async updateItemStatusForItem(itemId: string, status: string): Promise<void> {
     await this.pool.query(
       'UPDATE task_items_view SET item_status = $1 WHERE item_id = $2',

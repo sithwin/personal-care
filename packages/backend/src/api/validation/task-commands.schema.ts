@@ -22,6 +22,10 @@ export const taskCommandSchemas = {
     itemId: z.string().uuid(),
     consumable: z.boolean(),
   }),
+  RemoveItemRequirementCommand: z.object({
+    taskId: z.string().uuid(),
+    itemId: z.string().uuid(),
+  }),
   AttachResourceToTaskCommand: z.object({
     taskId: z.string().uuid(),
     resourceId: z.string().uuid(),
