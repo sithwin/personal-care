@@ -91,7 +91,7 @@ export function TaskForm({
   ]);
   const unattachedResources = allResources.filter(r => !takenResourceIds.has(r.id));
 
-  const handleSubmit = async () => {
+  async function handleSubmit() {
     setSubmitError('');
     try {
       await onSubmit({
@@ -107,17 +107,17 @@ export function TaskForm({
     } catch {
       setSubmitError('Failed to save task — please try again.');
     }
-  };
+  }
 
-  const handleAddExistingItem = async (itemId: string) => {
+  async function handleAddExistingItem(itemId: string) {
     if (mode === 'edit') {
       await itemActions?.onAddExisting(itemId);
     } else {
       setPendingItems(prev => [...prev, { type: 'existing', itemId }]);
     }
-  };
+  }
 
-  const handleAddNewItem = async () => {
+  async function handleAddNewItem() {
     if (!newItemName.trim()) return;
     if (mode === 'edit') {
       await itemActions?.onAddNew(newItemName.trim(), newItemCategoryId);
@@ -126,9 +126,9 @@ export function TaskForm({
     }
     setNewItemName('');
     setShowNewItemForm(false);
-  };
+  }
 
-  const handleRemoveItem = async (key: string) => {
+  async function handleRemoveItem(key: string) {
     if (mode === 'edit') {
       await itemActions?.onRemove(key);
     } else {
@@ -136,17 +136,17 @@ export function TaskForm({
         p.type === 'existing' ? p.itemId !== key : p.name !== key
       ));
     }
-  };
+  }
 
-  const handleAddExistingResource = async (resourceId: string) => {
+  async function handleAddExistingResource(resourceId: string) {
     if (mode === 'edit') {
       await resourceActions?.onAddExisting(resourceId);
     } else {
       setPendingResources(prev => [...prev, { type: 'existing', resourceId }]);
     }
-  };
+  }
 
-  const handleAddNewResource = async () => {
+  async function handleAddNewResource() {
     if (!newResourceTitle.trim()) return;
     if (mode === 'edit') {
       await resourceActions?.onAddNew(newResourceTitle.trim(), newResourceType, newResourceUrl || undefined);
@@ -158,9 +158,9 @@ export function TaskForm({
     setNewResourceTitle('');
     setNewResourceUrl('');
     setShowNewResourceForm(false);
-  };
+  }
 
-  const handleRemoveResource = async (key: string) => {
+  async function handleRemoveResource(key: string) {
     if (mode === 'edit') {
       await resourceActions?.onRemove(key);
     } else {
@@ -168,7 +168,7 @@ export function TaskForm({
         p.type === 'existing' ? p.resourceId !== key : p.title !== key
       ));
     }
-  };
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -244,13 +244,13 @@ export function TaskForm({
           );
         })}
 
-        {mode === 'create' && pendingItems.map((p, i) => {
+        {mode === 'create' && pendingItems.map((p, _i) => {
           const itemName = p.type === 'existing'
             ? (allItems.find(item => item.id === p.itemId)?.name ?? p.itemId)
             : p.name;
           const key = p.type === 'existing' ? p.itemId : p.name;
           return (
-            <div key={i} className="flex items-center gap-2">
+            <div key={key} className="flex items-center gap-2">
               <span className="flex-1 text-sm text-gray-400 italic">• {itemName}</span>
               <button type="button" onClick={() => void handleRemoveItem(key)}
                 className="text-xs text-gray-500 hover:text-red-400 transition-colors">✕</button>
@@ -315,13 +315,13 @@ export function TaskForm({
           </div>
         ))}
 
-        {mode === 'create' && pendingResources.map((p, i) => {
+        {mode === 'create' && pendingResources.map((p, _i) => {
           const resourceTitle = p.type === 'existing'
             ? (allResources.find(r => r.id === p.resourceId)?.title ?? p.resourceId)
             : p.title;
           const key = p.type === 'existing' ? p.resourceId : p.title;
           return (
-            <div key={i} className="flex items-center gap-2">
+            <div key={key} className="flex items-center gap-2">
               <span className="flex-1 text-sm text-gray-400 italic">• {resourceTitle}</span>
               <button type="button" onClick={() => void handleRemoveResource(key)}
                 className="text-xs text-gray-500 hover:text-red-400 transition-colors">✕</button>
