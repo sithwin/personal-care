@@ -2,14 +2,12 @@ import type { Pool } from 'pg';
 import type { StoredEvent } from '../../types';
 import type { IEventStore } from '../../application/ports/IEventStore';
 import type { DomainEvent } from '../../domain/shared/DomainEvent';
-import { childLogger } from '../logger';
-
-const log = childLogger('EventStore');
+import type { RequestContext } from '../../application/ports/RequestContext';
 
 export class EventStore implements IEventStore {
   constructor(private readonly pool: Pool) {}
 
-  async append(events: DomainEvent[], expectedVersion: number): Promise<StoredEvent[]> {
+  async append(events: DomainEvent[], expectedVersion: number, ctx: RequestContext): Promise<StoredEvent[]> {
     if (events.length === 0) return [];
     const client = await this.pool.connect();
     try {
@@ -30,14 +28,20 @@ export class EventStore implements IEventStore {
         } catch (err: unknown) {
           if (err instanceof Error && err.message.includes('unique')) {
             const msg = `Concurrency conflict on aggregate ${event.aggregateId} at version ${version}`;
-            log.warn({ aggregateId: event.aggregateId, version }, msg);
+            ctx.log.warn({ logEvent: 'eventStore.concurrencyConflict', aggregateId: event.aggregateId, version }, msg);
             throw new Error(msg);
           }
-          log.error({ err, aggregateId: event.aggregateId }, 'Unexpected error appending event');
+          ctx.log.error({ logEvent: 'eventStore.appendFailed', err, aggregateId: event.aggregateId }, 'Unexpected error appending event');
           throw err;
         }
       }
       await client.query('COMMIT');
+      ctx.log.info({
+        logEvent: 'eventStore.appended',
+        aggregateId: events[0].aggregateId,
+        eventTypes: stored.map(e => e.eventType),
+        count: stored.length,
+      });
       return stored;
     } catch (err) {
       await client.query('ROLLBACK');
