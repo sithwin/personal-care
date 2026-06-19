@@ -1,16 +1,20 @@
 import type { IEventStore } from '../../ports/IEventStore';
 import type { StoredEvent } from '../../../types';
 import type { MarkItemConsumedCommand } from '../../../domain/item/commands/MarkItemConsumedCommand';
+import type { RequestContext } from '../../ports/RequestContext';
 import { Item } from '../../../domain/item/Item';
 
 export class MarkItemConsumedHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
-  async handle(cmd: MarkItemConsumedCommand): Promise<StoredEvent[]> {
+  async handle(cmd: MarkItemConsumedCommand, ctx: RequestContext): Promise<StoredEvent[]> {
+    ctx.log.info({ logEvent: 'markItemConsumed.handle', payload: { id: cmd.payload.id } });
     const history = await this.eventStore.getEvents(cmd.payload.id);
     const aggregate = Item.reconstruct(history);
     if (aggregate === null) throw new Error('Item not found');
     const event = aggregate.markConsumed(cmd);
-    return this.eventStore.append([event], history.length);
+    const stored = await this.eventStore.append([event], history.length, ctx);
+    ctx.log.info({ logEvent: 'markItemConsumed.persisted', payload: { id: cmd.payload.id } });
+    return stored;
   }
 }
