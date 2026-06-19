@@ -6,6 +6,7 @@ import type { StoredEvent } from '../../types';
 import { makeCommandsRouter } from './commands.router';
 import { errorHandler } from '../middleware/error-handler';
 import { AppError } from '../errors/app-error';
+import { requestContextMiddleware } from '../middleware/request-context';
 
 const VALID_UUID = '11111111-1111-1111-1111-111111111111';
 const VALID_CATEGORY_UUID = '22222222-2222-2222-2222-222222222222';
@@ -33,6 +34,12 @@ describe('commands router', () => {
 
     const app = express();
     app.use(express.json());
+    // pino-http is not used in tests; manually add a log shim so requestContextMiddleware can call req.log.child
+    app.use((req, _res, next) => {
+      (req as unknown as { log: { child: () => unknown } }).log = { child: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: () => ({}) }) };
+      next();
+    });
+    app.use(requestContextMiddleware);
     app.use('/commands', makeCommandsRouter(bus));
     app.use(errorHandler);
 
@@ -57,10 +64,10 @@ describe('commands router', () => {
       body: JSON.stringify({ id: VALID_UUID, name: 'Buy milk', categoryId: VALID_CATEGORY_UUID }),
     });
 
-    expect(bus.dispatch).toHaveBeenCalledWith({
-      type: 'CreateTaskCommand',
-      payload: { id: VALID_UUID, name: 'Buy milk', categoryId: VALID_CATEGORY_UUID },
-    });
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'CreateTaskCommand', payload: { id: VALID_UUID, name: 'Buy milk', categoryId: VALID_CATEGORY_UUID } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
   });
 
   it('returns 201 with the events mapped to id, eventType and aggregateId', async () => {
