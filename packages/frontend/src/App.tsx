@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Link, Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { Dashboard } from './pages/Dashboard';
@@ -17,7 +17,11 @@ export function App() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="h-14 bg-gray-900 border-b border-gray-800 flex items-center px-4 shrink-0">
-        <TopBar />
+        <Link to="/" className="w-56 shrink-0 text-lg font-bold text-white">Personal GTD</Link>
+        <div className="flex-1 flex justify-center">
+          <TopBar />
+        </div>
+        <div className="w-56 shrink-0" />
       </header>
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

@@ -25,8 +25,6 @@ export function Sidebar() {
 
   return (
     <aside className="w-56 min-h-screen bg-gray-900 border-r border-gray-800 flex flex-col p-3 gap-1">
-      <NavLink to="/" className="text-lg font-bold text-white px-2 py-3 mb-2">Personal GTD</NavLink>
-
       <p className="text-xs uppercase text-gray-500 px-2 mb-1 mt-2">By Status</p>
       {statusLinks.map(l => (
         <NavLink key={l.key} to={l.to}
