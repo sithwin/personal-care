@@ -19,6 +19,7 @@ import { makeSuggestRouter } from './api/routes/suggest.router';
 import { makeSearchRouter } from './api/routes/search.router';
 import { bootstrapSearchIndex } from './infrastructure/search/bootstrapSearchIndex';
 import { errorHandler } from './api/middleware/error-handler';
+import { requestContextMiddleware } from './api/middleware/request-context';
 import { seed } from './seed/seed';
 
 async function main(): Promise<void> {
@@ -51,6 +52,7 @@ async function main(): Promise<void> {
     customSuccessMessage: (req, res) => `${req.method} ${req.url} ${res.statusCode}`,
     customErrorMessage: (req, res) => `${req.method} ${req.url} ${res.statusCode}`,
   }));
+  app.use(requestContextMiddleware);
 
   // Versioned query routes
   app.use('/api/v1/tasks',      makeTasksRouter(deps.taskQueryService));

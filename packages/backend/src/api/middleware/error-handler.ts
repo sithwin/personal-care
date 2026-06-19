@@ -33,7 +33,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   const status = resolveStatus(err);
   const message = err instanceof Error ? err.message : 'Internal Server Error';
   const pgCode = isPgError(err) ? err.code : undefined;
-  const context = { method: req.method, url: req.url, status, pgCode };
+  const context = { requestId: req.requestId, method: req.method, url: req.url, status, pgCode };
 
   if (status >= 500) {
     log.error({ err, ...context }, 'Unhandled server error');

@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockAddDocuments = vi.fn().mockResolvedValue({});
-const mockUpdateDocuments = vi.fn().mockResolvedValue({});
+const mockAddDocuments = vi.fn().mockResolvedValue({ taskUid: 1 });
+const mockUpdateDocuments = vi.fn().mockResolvedValue({ taskUid: 2 });
 const mockDeleteDocument = vi.fn().mockResolvedValue({});
-const mockUpdateSettings = vi.fn().mockResolvedValue({});
+const mockUpdateSettings = vi.fn().mockResolvedValue({ taskUid: 3 });
 const mockGetStats = vi.fn().mockResolvedValue({ numberOfDocuments: 0 });
+const mockWaitForTask = vi.fn().mockResolvedValue({ status: 'succeeded' });
+const mockCreateIndex = vi.fn().mockResolvedValue({ taskUid: 0 });
 const mockIndex = vi.fn().mockReturnValue({
   addDocuments: mockAddDocuments,
   updateDocuments: mockUpdateDocuments,
@@ -14,7 +16,11 @@ const mockIndex = vi.fn().mockReturnValue({
 });
 
 vi.mock('meilisearch', () => ({
-  Meilisearch: vi.fn().mockImplementation(() => ({ index: mockIndex })),
+  Meilisearch: vi.fn().mockImplementation(() => ({
+    index: mockIndex,
+    createIndex: mockCreateIndex,
+    tasks: { waitForTask: mockWaitForTask },
+  })),
 }));
 
 import { MeilisearchSearchIndexer } from './MeilisearchSearchIndexer';
@@ -35,6 +41,12 @@ describe('MeilisearchSearchIndexer', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAddDocuments.mockResolvedValue({ taskUid: 1 });
+    mockUpdateDocuments.mockResolvedValue({ taskUid: 2 });
+    mockUpdateSettings.mockResolvedValue({ taskUid: 3 });
+    mockCreateIndex.mockResolvedValue({ taskUid: 0 });
+    mockWaitForTask.mockResolvedValue({ status: 'succeeded' });
+    mockGetStats.mockResolvedValue({ numberOfDocuments: 0 });
     indexer = new MeilisearchSearchIndexer('http://localhost:7700', 'test_key');
   });
 
@@ -49,7 +61,7 @@ describe('MeilisearchSearchIndexer', () => {
 
   it('upsert calls addDocuments with the document', async () => {
     await indexer.upsert(doc);
-    expect(mockAddDocuments).toHaveBeenCalledWith([doc]);
+    expect(mockAddDocuments).toHaveBeenCalledWith([doc], { primaryKey: 'id' });
   });
 
   it('patch calls updateDocuments with id and fields', async () => {
@@ -64,7 +76,7 @@ describe('MeilisearchSearchIndexer', () => {
 
   it('bootstrap calls addDocuments with all docs', async () => {
     await indexer.bootstrap([doc]);
-    expect(mockAddDocuments).toHaveBeenCalledWith([doc]);
+    expect(mockAddDocuments).toHaveBeenCalledWith([doc], { primaryKey: 'id' });
   });
 
   it('bootstrap is a no-op when docs array is empty', async () => {
