@@ -17,6 +17,12 @@ services:
       - "7700:7700"
     volumes:
       - meilisearch_data:/meili_data
+  meilisearch-ui:
+    image: riccox/meilisearch-ui:latest
+    ports:
+      - "24900:24900"
+    depends_on:
+      - meilisearch
 volumes:
   postgres_data:
   meilisearch_data:

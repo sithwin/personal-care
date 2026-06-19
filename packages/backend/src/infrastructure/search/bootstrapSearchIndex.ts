@@ -1,11 +1,17 @@
 import type { Pool } from 'pg';
 import type { ISearchIndexer, SearchDocument } from '../../application/ports/ISearchIndexer';
+import { childLogger } from '../logger';
+
+const log = childLogger('search:bootstrap');
 
 export async function bootstrapSearchIndex(indexer: ISearchIndexer, pool: Pool): Promise<void> {
   await indexer.ensureIndex();
 
   const count = await indexer.getDocumentCount();
-  if (count > 0) return;
+  if (count > 0) {
+    log.info({ count }, 'index already populated — skipping bootstrap');
+    return;
+  }
 
   const [tasks, items, projects] = await Promise.all([
     pool.query<{ id: string; name: string; description: string | null; category_id: string; status: string }>(
@@ -49,5 +55,12 @@ export async function bootstrapSearchIndex(indexer: ISearchIndexer, pool: Pool):
     })),
   ];
 
+  if (docs.length === 0) {
+    log.info('no existing data in DB views — nothing to bootstrap');
+    return;
+  }
+
+  log.info({ total: docs.length }, 'bootstrapping Meilisearch with existing docs');
   await indexer.bootstrap(docs);
+  log.info({ total: docs.length }, 'bootstrap complete');
 }
