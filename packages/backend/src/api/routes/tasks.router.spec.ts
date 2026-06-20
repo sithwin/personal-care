@@ -2,8 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import express from 'express';
 import type { Server } from 'node:http';
 import type { ITaskQueryService, TaskView } from '../../application/ports/ITaskQueryService';
+import type { ICommandBus } from '../../application/ports/ICommandBus';
 import { makeTasksRouter } from './tasks.router';
 import { errorHandler } from '../middleware/error-handler';
+import { requestContextMiddleware } from '../middleware/request-context';
 
 function makeTaskView(overrides: Partial<TaskView> = {}): TaskView {
   return {
@@ -32,15 +34,27 @@ function makeTaskView(overrides: Partial<TaskView> = {}): TaskView {
 
 describe('tasks router', () => {
   let queryService: ITaskQueryService;
+  let bus: ICommandBus;
   let server: Server;
   let baseUrl: string;
 
   beforeEach(async () => {
     queryService = { getAll: vi.fn(), getById: vi.fn() };
+    bus = { dispatch: vi.fn().mockResolvedValue([{
+      id: 1, aggregateId: 'new-uuid', aggregateType: 'task',
+      eventType: 'TaskCreated', payload: {}, version: 1, createdAt: new Date(),
+    }]) } as unknown as ICommandBus;
 
     const app = express();
     app.use(express.json());
-    app.use('/tasks', makeTasksRouter(queryService));
+    app.use((req, _res, next) => {
+      (req as unknown as { log: { child: () => unknown } }).log = {
+        child: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: () => ({}) }),
+      };
+      next();
+    });
+    app.use(requestContextMiddleware);
+    app.use('/tasks', makeTasksRouter(queryService, bus));
     app.use(errorHandler);
 
     await new Promise<void>((resolve) => {
@@ -96,5 +110,58 @@ describe('tasks router', () => {
 
     expect(res.status).toBe(404);
     expect(body).toMatchObject({ success: false, message: 'Task not found' });
+  });
+
+  it('POST / creates a task and returns 201 with id', async () => {
+    const res = await fetch(`${baseUrl}/tasks`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Oil change', categoryId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' }),
+    });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({ id: 'new-uuid' });
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'CreateTaskCommand', payload: { name: 'Oil change', categoryId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('POST / returns 400 for invalid body', async () => {
+    const res = await fetch(`${baseUrl}/tasks`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: '' }),
+    });
+    expect(res.status).toBe(400);
+    expect(bus.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('PATCH /:id updates a task and returns 204', async () => {
+    vi.mocked(bus.dispatch).mockResolvedValue([]);
+    const res = await fetch(`${baseUrl}/tasks/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Updated oil change' }),
+    });
+    expect(res.status).toBe(204);
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'UpdateTaskCommand', payload: { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', name: 'Updated oil change' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('POST /:id/start starts a task and returns 204', async () => {
+    vi.mocked(bus.dispatch).mockResolvedValue([]);
+    const res = await fetch(`${baseUrl}/tasks/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/start`, { method: 'POST' });
+    expect(res.status).toBe(204);
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'StartTaskCommand', payload: { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('PATCH /:id returns 400 for invalid UUID', async () => {
+    const res = await fetch(`${baseUrl}/tasks/not-a-uuid`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Test' }),
+    });
+    expect(res.status).toBe(400);
   });
 });
