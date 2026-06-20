@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Task } from './Task';
 import type { StoredEvent } from '../../types';
+
+const TEST_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -8,7 +10,7 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
     aggregateId: 'task-1',
     aggregateType: 'task',
     eventType: 'TaskCreated',
-    payload: { id: 'task-1', name: 'Oil change', categoryId: 'cat-1' },
+    payload: { name: 'Oil change', categoryId: 'cat-1' },
     version: 1,
     createdAt: new Date(),
     ...overrides,
@@ -20,10 +22,13 @@ describe('Task', () => {
     expect(Task.reconstruct([])).toBeNull();
   });
 
-  it('create emits TaskCreated', () => {
-    const event = Task.create({ type: 'CreateTaskCommand' as const, payload: { id: 'task-1', name: 'Oil change', categoryId: 'cat-1' } });
+  it('emits TaskCreated with aggregateId from randomUUID', () => {
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue(TEST_UUID as ReturnType<typeof crypto.randomUUID>);
+    const cmd = { type: 'CreateTaskCommand' as const, payload: { name: 'Oil change', categoryId: 'cat-1' } };
+    const event = Task.create(cmd);
     expect(event.eventType).toBe('TaskCreated');
-    expect(event.aggregateId).toBe('task-1');
+    expect(event.aggregateId).toBe(TEST_UUID);
+    expect(event.payload).toEqual({ name: 'Oil change', categoryId: 'cat-1' });
   });
 
   it('start emits TaskStarted', () => {

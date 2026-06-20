@@ -3,7 +3,6 @@ import type { UUID, EstimatedDuration } from '../../../types';
 export interface CreateTaskCommand {
   readonly type: 'CreateTaskCommand';
   readonly payload: {
-    readonly id: UUID;
     readonly name: string;
     readonly categoryId: UUID;
     readonly description?: string;

@@ -54,7 +54,7 @@ export class Task {
       const payload = event.payload;
       if (event.eventType === 'TaskCreated') {
         state = {
-          id: payload.id as UUID,
+          id: event.aggregateId as UUID,
           name: payload.name as string,
           categoryId: payload.categoryId as UUID,
           started: false,
@@ -91,7 +91,7 @@ export class Task {
   }
 
   static create(cmd: CreateTaskCommand): TaskCreated {
-    return new TaskCreated(cmd.payload);
+    return new TaskCreated(crypto.randomUUID() as UUID, cmd.payload);
   }
 
   start(cmd: StartTaskCommand): TaskStarted {
