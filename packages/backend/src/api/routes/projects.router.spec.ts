@@ -2,8 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import express from 'express';
 import type { Server } from 'node:http';
 import type { IProjectQueryService, ProjectView } from '../../application/ports/IProjectQueryService';
+import type { ICommandBus } from '../../application/ports/ICommandBus';
 import { makeProjectsRouter } from './projects.router';
 import { errorHandler } from '../middleware/error-handler';
+import { requestContextMiddleware } from '../middleware/request-context';
 
 function makeProjectView(overrides: Partial<ProjectView> = {}): ProjectView {
   return {
@@ -21,15 +23,27 @@ function makeProjectView(overrides: Partial<ProjectView> = {}): ProjectView {
 
 describe('projects router', () => {
   let queryService: IProjectQueryService;
+  let bus: ICommandBus;
   let server: Server;
   let baseUrl: string;
 
   beforeEach(async () => {
     queryService = { getAll: vi.fn(), getById: vi.fn() };
+    bus = { dispatch: vi.fn().mockResolvedValue([{
+      id: 1, aggregateId: 'new-uuid', aggregateType: 'project',
+      eventType: 'ProjectCreated', payload: {}, version: 1, createdAt: new Date(),
+    }]) } as unknown as ICommandBus;
 
     const app = express();
     app.use(express.json());
-    app.use('/projects', makeProjectsRouter(queryService));
+    app.use((req, _res, next) => {
+      (req as unknown as { log: { child: () => unknown } }).log = {
+        child: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: () => ({}) }),
+      };
+      next();
+    });
+    app.use(requestContextMiddleware);
+    app.use('/projects', makeProjectsRouter(queryService, bus));
     app.use(errorHandler);
 
     await new Promise<void>((resolve) => {
@@ -85,5 +99,58 @@ describe('projects router', () => {
 
     expect(res.status).toBe(404);
     expect(body).toMatchObject({ success: false, message: 'Project not found' });
+  });
+
+  it('POST / creates a project and returns 201 with id', async () => {
+    const res = await fetch(`${baseUrl}/projects`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Home Reno', categoryId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' }),
+    });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({ id: 'new-uuid' });
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'CreateProjectCommand', payload: { name: 'Home Reno', categoryId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('POST / returns 400 for invalid body', async () => {
+    const res = await fetch(`${baseUrl}/projects`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: '' }),
+    });
+    expect(res.status).toBe(400);
+    expect(bus.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('PATCH /:id updates a project and returns 204', async () => {
+    vi.mocked(bus.dispatch).mockResolvedValue([]);
+    const res = await fetch(`${baseUrl}/projects/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Garden Overhaul' }),
+    });
+    expect(res.status).toBe(204);
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'UpdateProjectCommand', payload: { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', name: 'Garden Overhaul' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('POST /:id/complete completes a project and returns 204', async () => {
+    vi.mocked(bus.dispatch).mockResolvedValue([]);
+    const res = await fetch(`${baseUrl}/projects/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/complete`, { method: 'POST' });
+    expect(res.status).toBe(204);
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'CompleteProjectCommand', payload: { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('PATCH /:id returns 400 for invalid UUID', async () => {
+    const res = await fetch(`${baseUrl}/projects/not-a-uuid`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Test' }),
+    });
+    expect(res.status).toBe(400);
   });
 });
