@@ -1,81 +1,63 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CreateCategoryHandler } from './CreateCategoryHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { CreateCategoryCommand } from '../../../domain/category/commands/CreateCategoryCommand';
 import type { StoredEvent } from '../../../types';
-import { Category } from '../../../domain/category/Category';
+import type { RequestContext } from '../../ports/RequestContext';
+
+const TEST_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('CreateCategoryHandler', () => {
-  it('appends the event from Category.create with expectedVersion 0', async () => {
+  beforeEach(() => {
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue(TEST_UUID as ReturnType<typeof crypto.randomUUID>);
+  });
+
+  it('appends CategoryCreated with aggregateId from randomUUID and expectedVersion 0', async () => {
     const cmd: CreateCategoryCommand = {
       type: 'CreateCategoryCommand',
-      payload: {
-        id: 'cat-1',
-        name: 'Home',
-        icon: '🏠',
-        color: '#22c55e',
-        isDefault: false,
-      },
+      payload: { name: 'Home', icon: '🏠', color: '#22c55e', isDefault: false },
     };
-
-    const event = Category.create(cmd);
-    const mockStoredEvents: StoredEvent[] = [
-      {
-        id: 1,
-        aggregateId: 'cat-1',
-        aggregateType: 'category',
-        eventType: 'CategoryCreated',
-        payload: cmd.payload,
-        version: 1,
-        createdAt: new Date(),
-      },
-    ];
-
+    const mockStoredEvents: StoredEvent[] = [{
+      id: 1, aggregateId: TEST_UUID, aggregateType: 'category',
+      eventType: 'CategoryCreated', payload: cmd.payload, version: 1, createdAt: new Date(),
+    }];
     const mockEventStore = {
       append: vi.fn().mockResolvedValue(mockStoredEvents),
-      getEvents: vi.fn(),
-      getAllEventsSince: vi.fn(),
+      getEvents: vi.fn(), getAllEventsSince: vi.fn(),
     } as unknown as IEventStore;
 
     const handler = new CreateCategoryHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
-    expect(mockEventStore.append).toHaveBeenCalledWith([event], 0);
+    expect(mockEventStore.append).toHaveBeenCalledWith(
+      [expect.objectContaining({ aggregateId: TEST_UUID, eventType: 'CategoryCreated' })],
+      0, ctx,
+    );
     expect(result).toBe(mockStoredEvents);
   });
 
   it('returns exactly what eventStore.append resolves to', async () => {
     const cmd: CreateCategoryCommand = {
       type: 'CreateCategoryCommand',
-      payload: {
-        id: 'cat-2',
-        name: 'Health',
-        icon: '💪',
-        color: '#ef4444',
-        isDefault: true,
-      },
+      payload: { name: 'Health', icon: '💪', color: '#ef4444', isDefault: true },
     };
-
-    const customStoredEvents: StoredEvent[] = [
-      {
-        id: 99,
-        aggregateId: 'cat-2',
-        aggregateType: 'category',
-        eventType: 'CategoryCreated',
-        payload: cmd.payload,
-        version: 1,
-        createdAt: new Date('2026-06-16'),
-      },
-    ];
-
+    const customStoredEvents: StoredEvent[] = [{
+      id: 99, aggregateId: TEST_UUID, aggregateType: 'category',
+      eventType: 'CategoryCreated', payload: cmd.payload, version: 1, createdAt: new Date('2026-06-20'),
+    }];
     const mockEventStore = {
       append: vi.fn().mockResolvedValue(customStoredEvents),
-      getEvents: vi.fn(),
-      getAllEventsSince: vi.fn(),
+      getEvents: vi.fn(), getAllEventsSince: vi.fn(),
     } as unknown as IEventStore;
 
     const handler = new CreateCategoryHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);

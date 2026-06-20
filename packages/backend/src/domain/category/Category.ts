@@ -24,7 +24,7 @@ export class Category {
       const payload = event.payload;
       if (event.eventType === 'CategoryCreated') {
         state = {
-          id: payload.id as UUID,
+          id: event.aggregateId as UUID,
           name: payload.name as string,
           icon: payload.icon as string,
           color: payload.color as string,
@@ -46,7 +46,7 @@ export class Category {
   }
 
   static create(cmd: CreateCategoryCommand): CategoryCreated {
-    return new CategoryCreated(cmd.payload);
+    return new CategoryCreated(crypto.randomUUID() as UUID, cmd.payload);
   }
 
   update(cmd: UpdateCategoryCommand): CategoryUpdated {
