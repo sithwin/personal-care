@@ -1,3 +1,4 @@
+import { ZodError } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 import { AppError } from '../errors/app-error';
 import { childLogger } from '../../infrastructure/logger';
@@ -14,6 +15,7 @@ function isPgError(err: unknown): err is PgError {
 
 function resolveStatus(err: unknown): number {
   if (err instanceof AppError) return err.statusCode;
+  if (err instanceof ZodError) return 400;
 
   if (isPgError(err)) {
     if (err.code === '22P02') return 400; // invalid UUID / type input
