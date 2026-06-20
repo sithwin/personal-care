@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Item } from './Item';
 import type { StoredEvent } from '../../types';
+
+const TEST_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -8,7 +10,7 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
     aggregateId: 'item-1',
     aggregateType: 'item',
     eventType: 'ItemCreated',
-    payload: { id: 'item-1', name: 'Shampoo', categoryId: 'cat-1', status: 'to_buy' },
+    payload: { name: 'Shampoo', categoryId: 'cat-1', status: 'to_buy' },
     version: 1,
     createdAt: new Date(),
     ...overrides,
@@ -20,10 +22,12 @@ describe('Item', () => {
     expect(Item.reconstruct([])).toBeNull();
   });
 
-  it('create emits ItemCreated with status to_buy', () => {
-    const cmd = { type: 'CreateItemCommand' as const, payload: { id: 'item-1', name: 'Shampoo', categoryId: 'cat-1' } };
+  it('emits ItemCreated with aggregateId from randomUUID and status to_buy', () => {
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue(TEST_UUID as ReturnType<typeof crypto.randomUUID>);
+    const cmd = { type: 'CreateItemCommand' as const, payload: { name: 'Shampoo', categoryId: 'cat-1' } };
     const event = Item.create(cmd);
     expect(event.eventType).toBe('ItemCreated');
+    expect(event.aggregateId).toBe(TEST_UUID);
     expect(event.payload.status).toBe('to_buy');
   });
 

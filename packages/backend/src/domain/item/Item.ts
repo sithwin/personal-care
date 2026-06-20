@@ -24,7 +24,7 @@ export class Item {
       const payload = event.payload;
       if (event.eventType === 'ItemCreated') {
         state = {
-          id: payload.id as UUID,
+          id: event.aggregateId as UUID,
           name: payload.name as string,
           categoryId: payload.categoryId as UUID,
           status: 'to_buy',
@@ -41,7 +41,7 @@ export class Item {
   }
 
   static create(cmd: CreateItemCommand): ItemCreated {
-    return new ItemCreated({ ...cmd.payload, status: 'to_buy' });
+    return new ItemCreated(crypto.randomUUID() as UUID, { ...cmd.payload, status: 'to_buy' });
   }
 
   markAvailable(cmd: MarkItemAvailableCommand): ItemMarkedAvailable {

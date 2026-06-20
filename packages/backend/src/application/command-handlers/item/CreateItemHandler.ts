@@ -8,10 +8,10 @@ export class CreateItemHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
   async handle(cmd: CreateItemCommand, ctx: RequestContext): Promise<StoredEvent[]> {
-    ctx.log.info({ logEvent: 'createItem.handle', payload: { id: cmd.payload.id } });
+    ctx.log.info({ logEvent: 'createItem.handle' });
     const event = Item.create(cmd);
     const stored = await this.eventStore.append([event], 0, ctx);
-    ctx.log.info({ logEvent: 'createItem.persisted', payload: { id: cmd.payload.id } });
+    ctx.log.info({ logEvent: 'createItem.persisted', payload: { id: stored[0].aggregateId } });
     return stored;
   }
 }
