@@ -16,6 +16,8 @@ docker-compose up -d          # start PostgreSQL
 npm run dev:backend            # backend on :3001
 npm run dev:frontend           # frontend on :5173
 npm test                       # all workspaces
+npm run rebuild-projections --workspace=@personal-care/backend  # replay all events into projections
+npm run reset-dev --workspace=@personal-care/backend           # wipe DB + Meilisearch (dev only)
 ```
 
 ## Architecture

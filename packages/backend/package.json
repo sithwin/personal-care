@@ -5,7 +5,8 @@
     "dev": "node --env-file=.env --require ts-node/register src/index.ts",
     "test": "vitest run --fileParallelism=false",
     "migrate": "node --env-file=.env --require ts-node/register src/db/migrate.ts",
-    "rebuild-projections": "node --env-file=.env --require ts-node/register src/scripts/rebuild-projections.ts"
+    "rebuild-projections": "node --env-file=.env --require ts-node/register src/scripts/rebuild-projections.ts",
+    "reset-dev": "node --env-file=.env --require ts-node/register src/scripts/reset-dev.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

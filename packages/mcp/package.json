@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "ts-node src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "echo \"No tests for mcp package\""
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

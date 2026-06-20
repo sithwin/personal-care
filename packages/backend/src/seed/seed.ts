@@ -6,9 +6,14 @@ import { childLogger } from '../infrastructure/logger';
 const log = childLogger('seed');
 
 export async function seed(bus: ICommandBus, pool: Pool): Promise<void> {
-  const existing = await pool.query(`SELECT id FROM categories_view WHERE name IN ('Health', 'Study') AND is_default = true`);
-  if (existing.rows.length >= 2) {
-    log.debug('Seed skipped — built-in categories already exist');
+  const existing = await pool.query<{ count: string }>(
+    `SELECT COUNT(*) AS count FROM events
+     WHERE event_type = 'CategoryCreated'
+     AND payload->>'name' IN ('Health', 'Study')
+     AND (payload->>'isDefault')::boolean = true`,
+  );
+  if (Number(existing.rows[0].count) >= 2) {
+    log.debug('Seed skipped — built-in categories already exist in event store');
     return;
   }
 
