@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -8,10 +9,11 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
-        rewrite: (path) => path.startsWith('/api/commands')
-          ? path.replace(/^\/api/, '')
-          : path.replace(/^\/api/, '/api/v1'),
+        rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
       },
     },
+  },
+  test: {
+    environment: 'node',
   },
 });

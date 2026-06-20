@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSuggestions, useCategories } from '../api/queries';
-import { dispatch } from '../api/commands';
+import { startTask } from '../api/mutations';
 
 const QUICK_PICKS = [0.5, 1, 2, 3];
 
@@ -13,7 +13,7 @@ export function Suggest() {
   const qc = useQueryClient();
 
   const handleStart = async (taskId: string) => {
-    await dispatch('StartTask', { id: taskId });
+    await startTask(taskId);
     await qc.invalidateQueries();
   };
 

@@ -1,8 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { v4 as uuidv4 } from 'uuid';
 import { useTask, useCategories, useProjects, useItems, useResources } from '../api/queries';
-import { dispatch } from '../api/commands';
+import {
+  updateTask, startTask, completeTask,
+  createItem, addItemRequirement, removeItemRequirement,
+  createResource, attachResourceToTask, detachResourceFromTask,
+  addTaskToProject,
+} from '../api/mutations';
 import { TaskForm } from '../components/tasks/TaskForm';
 import type { TaskFormData, ItemActions, ResourceActions } from '../components/tasks/TaskForm';
 
@@ -23,59 +27,56 @@ export function TaskDetail() {
 
   async function handleSave(data: TaskFormData) {
     if (data.projectId && data.projectId !== taskRef.project_id) {
-      await dispatch('AddTaskToProjectCommand', { projectId: data.projectId, taskId: taskRef.id });
+      await addTaskToProject(data.projectId, taskRef.id);
     }
-    await dispatch('UpdateTaskCommand', {
-      id: taskRef.id,
+    await updateTask(taskRef.id, {
       name: data.name,
       categoryId: data.categoryId,
       description: data.description,
       estimatedDuration: data.estimatedDuration,
       dueDate: data.dueDate,
-    } as Record<string, unknown>);
+    });
     await qc.invalidateQueries();
   }
 
   async function handleStart() {
-    await dispatch('StartTaskCommand', { id: taskRef.id });
+    await startTask(taskRef.id);
     await qc.invalidateQueries();
   }
 
   async function handleComplete() {
-    await dispatch('CompleteTaskCommand', { id: taskRef.id, itemDisposals: [] });
+    await completeTask(taskRef.id, { itemDisposals: [] });
     await qc.invalidateQueries();
   }
 
   const itemActions: ItemActions = {
     onAddExisting: async (itemId) => {
-      await dispatch('AddItemRequirementCommand', { taskId: taskRef.id, itemId, consumable: true });
+      await addItemRequirement(taskRef.id, itemId, { consumable: true });
       await qc.invalidateQueries();
     },
     onAddNew: async (name, categoryId) => {
-      const itemId = uuidv4();
-      await dispatch('CreateItemCommand', { id: itemId, name, categoryId });
-      await dispatch('AddItemRequirementCommand', { taskId: taskRef.id, itemId, consumable: true });
+      const { id: itemId } = await createItem({ name, categoryId });
+      await addItemRequirement(taskRef.id, itemId, { consumable: true });
       await qc.invalidateQueries();
     },
     onRemove: async (itemId) => {
-      await dispatch('RemoveItemRequirementCommand', { taskId: taskRef.id, itemId });
+      await removeItemRequirement(taskRef.id, itemId);
       await qc.invalidateQueries();
     },
   };
 
   const resourceActions: ResourceActions = {
     onAddExisting: async (resourceId) => {
-      await dispatch('AttachResourceToTaskCommand', { taskId: taskRef.id, resourceId });
+      await attachResourceToTask(taskRef.id, resourceId);
       await qc.invalidateQueries();
     },
     onAddNew: async (title, type, url) => {
-      const resourceId = uuidv4();
-      await dispatch('CreateResourceCommand', { id: resourceId, title, type, url });
-      await dispatch('AttachResourceToTaskCommand', { taskId: taskRef.id, resourceId });
+      const { id: resourceId } = await createResource({ title, type, url });
+      await attachResourceToTask(taskRef.id, resourceId);
       await qc.invalidateQueries();
     },
     onRemove: async (resourceId) => {
-      await dispatch('DetachResourceFromTaskCommand', { taskId: taskRef.id, resourceId });
+      await detachResourceFromTask(taskRef.id, resourceId);
       await qc.invalidateQueries();
     },
   };

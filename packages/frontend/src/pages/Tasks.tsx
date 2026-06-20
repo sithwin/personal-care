@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Task, Project } from '../api/queries';
 import { useTasks, useCategories, useProjects } from '../api/queries';
-import { dispatch } from '../api/commands';
+import {
+  startTask, completeTask,
+  createProject, updateProject, planProject, startProject, pauseProject, resumeProject, completeProject,
+} from '../api/mutations';
 
 const STATUS_TABS = ['ready', 'ongoing', 'pending', 'planned', 'done'] as const;
 
@@ -14,12 +16,12 @@ function TaskRow({ task }: { task: Task }) {
   const cat = categories?.find(c => c.id === task.category_id);
 
   const handleComplete = async () => {
-    await dispatch('CompleteTaskCommand', { id: task.id, itemDisposals: [] });
+    await completeTask(task.id, { itemDisposals: [] });
     await qc.invalidateQueries();
   };
 
   const handleStart = async () => {
-    await dispatch('StartTaskCommand', { id: task.id });
+    await startTask(task.id);
     await qc.invalidateQueries();
   };
 
@@ -77,7 +79,7 @@ function ProjectCard({ project }: { project: Project }) {
     if (!startDate) return;
     const endDate = window.prompt('End date (YYYY-MM-DD):');
     if (!endDate) return;
-    await dispatch('PlanProjectCommand', { id: project.id, startDate, endDate });
+    await planProject(project.id, { startDate, endDate });
     await qc.invalidateQueries();
   };
 
@@ -88,22 +90,22 @@ function ProjectCard({ project }: { project: Project }) {
       if (!input) return;
       endDate = input;
     }
-    await dispatch('StartProjectCommand', { id: project.id, endDate });
+    await startProject(project.id, endDate ? { endDate } : undefined);
     await qc.invalidateQueries();
   };
 
   const handlePause = async () => {
-    await dispatch('PauseProjectCommand', { id: project.id });
+    await pauseProject(project.id);
     await qc.invalidateQueries();
   };
 
   const handleResume = async () => {
-    await dispatch('ResumeProjectCommand', { id: project.id });
+    await resumeProject(project.id);
     await qc.invalidateQueries();
   };
 
   const handleComplete = async () => {
-    await dispatch('CompleteProjectCommand', { id: project.id });
+    await completeProject(project.id);
     await qc.invalidateQueries();
   };
 
@@ -181,10 +183,9 @@ function NewProjectRow({ onDone }: { onDone: () => void }) {
   }, [categories, categoryId]);
 
   const handleCreate = async () => {
-    const id = uuidv4();
-    await dispatch('CreateProjectCommand', { id, name: name.trim(), categoryId, description: description || undefined });
+    const { id } = await createProject({ name: name.trim(), categoryId, description: description || undefined });
     if (priority !== 'medium') {
-      await dispatch('UpdateProjectCommand', { id, priority });
+      await updateProject(id, { priority });
     }
     await qc.invalidateQueries();
     onDone();

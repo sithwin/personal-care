@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Project, Task } from '../api/queries';
 import { useDashboard, useProjects } from '../api/queries';
-import { dispatch } from '../api/commands';
+import { startTask, completeTask } from '../api/mutations';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',     color: 'bg-gray-700 text-gray-300' },
@@ -40,9 +40,9 @@ function UpNextRow({ task }: { task: Task }) {
 
   const handleAction = async () => {
     if (task.status === 'ready') {
-      await dispatch('StartTaskCommand', { id: task.id });
+      await startTask(task.id);
     } else if (task.status === 'ongoing') {
-      await dispatch('CompleteTaskCommand', { id: task.id, itemDisposals: [] });
+      await completeTask(task.id, { itemDisposals: [] });
     }
     await qc.invalidateQueries();
   };

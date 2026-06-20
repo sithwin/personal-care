@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Category } from '../api/queries';
 import { useCategories } from '../api/queries';
-import { dispatch } from '../api/commands';
-import { v4 as uuidv4 } from 'uuid';
+import { createCategory, updateCategory, deleteCategory } from '../api/mutations';
 
 const EMOJIS = ['💪','🏃','🧘','🛁','💊','🥗','📚','🎯','🏠','🌿','💤','🧹','🛒','🔧','🎨','🎵','💻','📝','🧠','💡','🌟','⚡','🔑','📅'];
 const COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#6b7280'];
@@ -62,7 +61,7 @@ function CategoryRow({ category }: CategoryRowProps) {
       : undefined;
 
   const handleSave = async () => {
-    await dispatch('UpdateCategoryCommand', { id: category.id, name, icon, color });
+    await updateCategory(category.id, { name, icon, color });
     await qc.invalidateQueries();
     setEditing(false);
   };
@@ -75,7 +74,7 @@ function CategoryRow({ category }: CategoryRowProps) {
   };
 
   const handleDelete = async () => {
-    await dispatch('DeleteCategoryCommand', { id: category.id });
+    await deleteCategory(category.id);
     await qc.invalidateQueries();
   };
 
@@ -145,7 +144,7 @@ function NewCategoryRow({ onDone }: NewCategoryRowProps) {
   const [color, setColor] = useState(COLORS[0]);
 
   const handleSave = async () => {
-    await dispatch('CreateCategoryCommand', { id: uuidv4(), name, icon, color, isDefault: false });
+    await createCategory({ name, icon, color, isDefault: false });
     await qc.invalidateQueries();
     onDone();
   };

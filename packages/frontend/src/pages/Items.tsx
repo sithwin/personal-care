@@ -3,14 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Item } from '../api/queries';
 import { useItems } from '../api/queries';
-import { dispatch } from '../api/commands';
+import { markItemAvailable, markItemConsumed, markItemAvailableAgain } from '../api/mutations';
 
 function ItemRow({ item }: { item: Item }) {
   const qc = useQueryClient();
 
-  const markAvailable = async () => { await dispatch('MarkItemAvailable', { id: item.id }); await qc.invalidateQueries(); };
-  const markConsumed = async () => { await dispatch('MarkItemConsumed', { id: item.id }); await qc.invalidateQueries(); };
-  const markAvailableAgain = async () => { await dispatch('MarkItemAvailableAgain', { id: item.id }); await qc.invalidateQueries(); };
+  const markAvailable = async () => { await markItemAvailable(item.id); await qc.invalidateQueries(); };
+  const markConsumed = async () => { await markItemConsumed(item.id); await qc.invalidateQueries(); };
+  const markAvailableAgain = async () => { await markItemAvailableAgain(item.id); await qc.invalidateQueries(); };
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg hover:border-gray-700 transition-colors">

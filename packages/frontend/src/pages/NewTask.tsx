@@ -1,8 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCategories, useProjects, useItems, useResources } from '../api/queries';
-import { dispatch } from '../api/commands';
+import { createTask, createItem, addItemRequirement, createResource, attachResourceToTask } from '../api/mutations';
 import { TaskForm } from '../components/tasks/TaskForm';
 import type { TaskFormData } from '../components/tasks/TaskForm';
 
@@ -17,35 +16,30 @@ export function NewTask() {
   if (!categories) return <div className="text-gray-500 text-sm">Loading...</div>;
 
   async function handleSubmit(data: TaskFormData) {
-    const taskId = uuidv4();
-
-    await dispatch('CreateTaskCommand', {
-      id: taskId,
+    const { id: taskId } = await createTask({
       name: data.name,
       categoryId: data.categoryId,
       description: data.description,
       projectId: data.projectId,
       estimatedDuration: data.estimatedDuration,
       dueDate: data.dueDate,
-    } as Record<string, unknown>);
+    });
 
     try {
       for (const pending of data.pendingItems) {
         if (pending.type === 'new') {
-          const itemId = uuidv4();
-          await dispatch('CreateItemCommand', { id: itemId, name: pending.name, categoryId: pending.categoryId });
-          await dispatch('AddItemRequirementCommand', { taskId, itemId, consumable: true });
+          const { id: itemId } = await createItem({ name: pending.name, categoryId: pending.categoryId });
+          await addItemRequirement(taskId, itemId, { consumable: true });
         } else {
-          await dispatch('AddItemRequirementCommand', { taskId, itemId: pending.itemId, consumable: true });
+          await addItemRequirement(taskId, pending.itemId, { consumable: true });
         }
       }
       for (const pending of data.pendingResources) {
         if (pending.type === 'new') {
-          const resourceId = uuidv4();
-          await dispatch('CreateResourceCommand', { id: resourceId, title: pending.title, type: pending.resourceType, url: pending.url });
-          await dispatch('AttachResourceToTaskCommand', { taskId, resourceId });
+          const { id: resourceId } = await createResource({ title: pending.title, type: pending.resourceType, url: pending.url });
+          await attachResourceToTask(taskId, resourceId);
         } else {
-          await dispatch('AttachResourceToTaskCommand', { taskId, resourceId: pending.resourceId });
+          await attachResourceToTask(taskId, pending.resourceId);
         }
       }
     } catch (err) {

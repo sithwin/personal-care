@@ -6,7 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import type { EventDropArg } from '@fullcalendar/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTasks } from '../api/queries';
-import { dispatch } from '../api/commands';
+import { scheduleTask } from '../api/mutations';
 
 export function Calendar() {
   const qc = useQueryClient();
@@ -26,7 +26,7 @@ export function Calendar() {
   const handleEventDrop = async (info: EventDropArg) => {
     const date = info.event.startStr.split('T')[0];
     const time = info.event.startStr.includes('T') ? info.event.startStr.split('T')[1].substring(0, 5) : '09:00';
-    await dispatch('ScheduleTask', { id: info.event.id, scheduledDate: date, scheduledStartTime: time });
+    await scheduleTask(info.event.id, { scheduledDate: date, scheduledStartTime: time });
     await qc.invalidateQueries();
   };
 
