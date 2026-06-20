@@ -2,8 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import express from 'express';
 import type { Server } from 'node:http';
 import type { IItemQueryService, ItemView } from '../../application/ports/IItemQueryService';
+import type { ICommandBus } from '../../application/ports/ICommandBus';
 import { makeItemsRouter } from './items.router';
 import { errorHandler } from '../middleware/error-handler';
+import { requestContextMiddleware } from '../middleware/request-context';
 
 function makeItemView(overrides: Partial<ItemView> = {}): ItemView {
   return {
@@ -22,15 +24,27 @@ function makeItemView(overrides: Partial<ItemView> = {}): ItemView {
 
 describe('items router', () => {
   let queryService: IItemQueryService;
+  let bus: ICommandBus;
   let server: Server;
   let baseUrl: string;
 
   beforeEach(async () => {
     queryService = { getAll: vi.fn(), getById: vi.fn() };
+    bus = { dispatch: vi.fn().mockResolvedValue([{
+      id: 1, aggregateId: 'new-uuid', aggregateType: 'item',
+      eventType: 'ItemCreated', payload: {}, version: 1, createdAt: new Date(),
+    }]) } as unknown as ICommandBus;
 
     const app = express();
     app.use(express.json());
-    app.use('/items', makeItemsRouter(queryService));
+    app.use((req, _res, next) => {
+      (req as unknown as { log: { child: () => unknown } }).log = {
+        child: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: () => ({}) }),
+      };
+      next();
+    });
+    app.use(requestContextMiddleware);
+    app.use('/items', makeItemsRouter(queryService, bus));
     app.use(errorHandler);
 
     await new Promise<void>((resolve) => {
@@ -86,5 +100,62 @@ describe('items router', () => {
 
     expect(res.status).toBe(404);
     expect(body).toMatchObject({ success: false, message: 'Item not found' });
+  });
+
+  it('POST / creates an item and returns 201 with id', async () => {
+    const res = await fetch(`${baseUrl}/items`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Shampoo', categoryId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' }),
+    });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({ id: 'new-uuid' });
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'CreateItemCommand', payload: { name: 'Shampoo', categoryId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('POST / returns 400 for invalid body', async () => {
+    const res = await fetch(`${baseUrl}/items`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: '' }),
+    });
+    expect(res.status).toBe(400);
+    expect(bus.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('POST /:id/available marks item available and returns 204', async () => {
+    vi.mocked(bus.dispatch).mockResolvedValue([]);
+    const res = await fetch(`${baseUrl}/items/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/available`, { method: 'POST' });
+    expect(res.status).toBe(204);
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'MarkItemAvailableCommand', payload: { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('POST /:id/consumed marks item consumed and returns 204', async () => {
+    vi.mocked(bus.dispatch).mockResolvedValue([]);
+    const res = await fetch(`${baseUrl}/items/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/consumed`, { method: 'POST' });
+    expect(res.status).toBe(204);
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'MarkItemConsumedCommand', payload: { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('POST /:id/available-again marks item available again and returns 204', async () => {
+    vi.mocked(bus.dispatch).mockResolvedValue([]);
+    const res = await fetch(`${baseUrl}/items/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/available-again`, { method: 'POST' });
+    expect(res.status).toBe(204);
+    expect(bus.dispatch).toHaveBeenCalledWith(
+      { type: 'MarkItemAvailableAgainCommand', payload: { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+      expect.objectContaining({ requestId: expect.any(String) }),
+    );
+  });
+
+  it('POST /:id/available returns 400 for invalid UUID', async () => {
+    const res = await fetch(`${baseUrl}/items/not-a-uuid/available`, { method: 'POST' });
+    expect(res.status).toBe(400);
   });
 });
