@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { AddItemRequirementHandler } from './AddItemRequirementHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { AddItemRequirementCommand } from '../../../domain/task/commands/AddItemRequirementCommand';
 import type { StoredEvent } from '../../../types';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -16,6 +17,13 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
     ...overrides,
   };
 }
+
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('AddItemRequirementHandler', () => {
   it('throws Task not found when getEvents resolves empty history', async () => {
@@ -36,7 +44,7 @@ describe('AddItemRequirementHandler', () => {
 
     const handler = new AddItemRequirementHandler(mockEventStore);
 
-    await expect(handler.handle(cmd)).rejects.toThrow('Task not found');
+    await expect(handler.handle(cmd, ctx)).rejects.toThrow('Task not found');
     expect(mockEventStore.append).not.toHaveBeenCalled();
   });
 
@@ -71,7 +79,7 @@ describe('AddItemRequirementHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new AddItemRequirementHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(mockEventStore.getEvents).toHaveBeenCalledWith('task-1');
     expect(mockEventStore.append).toHaveBeenCalledOnce();
@@ -120,7 +128,7 @@ describe('AddItemRequirementHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new AddItemRequirementHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);

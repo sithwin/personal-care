@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { DeleteBalanceRuleHandler } from './DeleteBalanceRuleHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { DeleteBalanceRuleCommand } from '../../../domain/balance-rule/commands/DeleteBalanceRuleCommand';
 import type { StoredEvent } from '../../../types';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -16,6 +17,13 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
     ...overrides,
   };
 }
+
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('DeleteBalanceRuleHandler', () => {
   it('throws BalanceRule not found when getEvents resolves empty history', async () => {
@@ -34,7 +42,7 @@ describe('DeleteBalanceRuleHandler', () => {
 
     const handler = new DeleteBalanceRuleHandler(mockEventStore);
 
-    await expect(handler.handle(cmd)).rejects.toThrow('BalanceRule not found');
+    await expect(handler.handle(cmd, ctx)).rejects.toThrow('BalanceRule not found');
     expect(mockEventStore.append).not.toHaveBeenCalled();
   });
 
@@ -67,7 +75,7 @@ describe('DeleteBalanceRuleHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new DeleteBalanceRuleHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(mockEventStore.getEvents).toHaveBeenCalledWith('br-1');
     expect(mockEventStore.append).toHaveBeenCalledOnce();
@@ -116,7 +124,7 @@ describe('DeleteBalanceRuleHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new DeleteBalanceRuleHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);

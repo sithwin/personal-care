@@ -1,19 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockSearch = vi.fn();
-const mockIndex = vi.fn().mockReturnValue({ search: mockSearch });
+const mockIndex = vi.fn();
 
 vi.mock('meilisearch', () => ({
-  Meilisearch: vi.fn().mockImplementation(() => ({ index: mockIndex })),
+  Meilisearch: vi.fn(),
 }));
 
+import { Meilisearch } from 'meilisearch';
 import { MeilisearchSearchQueryService } from './MeilisearchSearchQueryService';
 
 describe('MeilisearchSearchQueryService', () => {
   let service: MeilisearchSearchQueryService;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockSearch.mockResolvedValue({ hits: [] });
+    mockIndex.mockReturnValue({ search: mockSearch });
+    vi.mocked(Meilisearch).mockImplementation(() => ({
+      index: mockIndex,
+    }) as unknown as Meilisearch);
     service = new MeilisearchSearchQueryService('http://localhost:7700', 'test_key');
   });
 

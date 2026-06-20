@@ -1,7 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { StoredEvent } from '../../types';
 import type { Projector } from '../../application/ports/IProjector';
+import type { RequestContext } from '../../application/ports/RequestContext';
 import { createProjectorRunner } from './runner';
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('createProjectorRunner', () => {
   it('calls each projector once per event with correct event instances', async () => {
@@ -30,14 +37,14 @@ describe('createProjectorRunner', () => {
       createdAt: new Date(),
     };
 
-    await runner([event0, event1]);
+    await runner([event0, event1], ctx);
 
     expect(projector1).toHaveBeenCalledTimes(2);
     expect(projector2).toHaveBeenCalledTimes(2);
-    expect(projector1).toHaveBeenNthCalledWith(1, event0);
-    expect(projector1).toHaveBeenNthCalledWith(2, event1);
-    expect(projector2).toHaveBeenNthCalledWith(1, event0);
-    expect(projector2).toHaveBeenNthCalledWith(2, event1);
+    expect(projector1).toHaveBeenNthCalledWith(1, event0, ctx);
+    expect(projector1).toHaveBeenNthCalledWith(2, event1, ctx);
+    expect(projector2).toHaveBeenNthCalledWith(1, event0, ctx);
+    expect(projector2).toHaveBeenNthCalledWith(2, event1, ctx);
   });
 
   it('processes events and projectors in sequential order: event-then-projector', async () => {
@@ -77,7 +84,7 @@ describe('createProjectorRunner', () => {
       createdAt: new Date(),
     };
 
-    await runner([event0, event1]);
+    await runner([event0, event1], ctx);
 
     expect(callLog).toEqual([
       'projector1:event0',

@@ -22,8 +22,9 @@ describe('bootstrapSearchIndex', () => {
       bootstrap: vi.fn(),
       getDocumentCount: vi.fn().mockResolvedValue(0),
     };
-    pool = new Pool();
     vi.clearAllMocks();
+    vi.mocked(Pool).mockImplementation(() => ({ query: mockQuery }) as unknown as Pool);
+    pool = new Pool();
     (indexer.getDocumentCount as ReturnType<typeof vi.fn>).mockResolvedValue(0);
   });
 

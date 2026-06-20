@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { MarkItemAvailableAgainHandler } from './MarkItemAvailableAgainHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { MarkItemAvailableAgainCommand } from '../../../domain/item/commands/MarkItemAvailableAgainCommand';
 import type { StoredEvent } from '../../../types';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -16,6 +17,13 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
     ...overrides,
   };
 }
+
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('MarkItemAvailableAgainHandler', () => {
   it('throws Item not found when getEvents resolves empty history', async () => {
@@ -34,7 +42,7 @@ describe('MarkItemAvailableAgainHandler', () => {
 
     const handler = new MarkItemAvailableAgainHandler(mockEventStore);
 
-    await expect(handler.handle(cmd)).rejects.toThrow('Item not found');
+    await expect(handler.handle(cmd, ctx)).rejects.toThrow('Item not found');
     expect(mockEventStore.append).not.toHaveBeenCalled();
   });
 
@@ -71,7 +79,7 @@ describe('MarkItemAvailableAgainHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new MarkItemAvailableAgainHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(mockEventStore.getEvents).toHaveBeenCalledWith('item-1');
     expect(mockEventStore.append).toHaveBeenCalledOnce();
@@ -133,7 +141,7 @@ describe('MarkItemAvailableAgainHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new MarkItemAvailableAgainHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CommandBus } from './CommandBus';
 import type { ICommandHandler } from '../../application/ports/ICommandHandler';
 import type { ILogger } from '../../application/ports/ILogger';
@@ -27,9 +27,12 @@ function makeMockLogger(): ILogger {
   return logger;
 }
 
-const httpCtx = { requestId: 'req-1', log: makeMockLogger() };
+let httpCtx: { requestId: string; log: ILogger };
 
 describe('CommandBus', () => {
+  beforeEach(() => {
+    httpCtx = { requestId: 'req-1', log: makeMockLogger() };
+  });
   it('routes to the registered handler', async () => {
     const bus = new CommandBus();
     const stored = [makeStoredEvent()];

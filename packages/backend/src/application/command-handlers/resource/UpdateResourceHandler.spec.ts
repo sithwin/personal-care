@@ -1,10 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { UpdateResourceHandler } from './UpdateResourceHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { UpdateResourceCommand } from '../../../domain/resource/commands/UpdateResourceCommand';
 import type { StoredEvent } from '../../../types';
 import { ResourceCreated } from '../../../domain/resource/events/ResourceCreated';
 import { ResourceUpdated } from '../../../domain/resource/events/ResourceUpdated';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function toStoredEvent(event: ResourceCreated | ResourceUpdated, id: number): StoredEvent {
   return {
@@ -17,6 +18,13 @@ function toStoredEvent(event: ResourceCreated | ResourceUpdated, id: number): St
     createdAt: new Date(),
   };
 }
+
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('UpdateResourceHandler', () => {
   it('rejects with "Resource not found" when getEvents resolves to empty array', async () => {
@@ -36,7 +44,7 @@ describe('UpdateResourceHandler', () => {
 
     const handler = new UpdateResourceHandler(mockEventStore);
 
-    await expect(handler.handle(cmd)).rejects.toThrow('Resource not found');
+    await expect(handler.handle(cmd, ctx)).rejects.toThrow('Resource not found');
     expect(mockEventStore.append).not.toHaveBeenCalled();
   });
 
@@ -77,7 +85,7 @@ describe('UpdateResourceHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new UpdateResourceHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(mockEventStore.getEvents).toHaveBeenCalledWith('res-1');
     expect(mockEventStore.append).toHaveBeenCalledOnce();
@@ -123,7 +131,7 @@ describe('UpdateResourceHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new UpdateResourceHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);

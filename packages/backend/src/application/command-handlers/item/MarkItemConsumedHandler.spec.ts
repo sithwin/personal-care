@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { MarkItemConsumedHandler } from './MarkItemConsumedHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { MarkItemConsumedCommand } from '../../../domain/item/commands/MarkItemConsumedCommand';
 import type { StoredEvent } from '../../../types';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -16,6 +17,13 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
     ...overrides,
   };
 }
+
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('MarkItemConsumedHandler', () => {
   it('throws Item not found when getEvents resolves empty history', async () => {
@@ -34,7 +42,7 @@ describe('MarkItemConsumedHandler', () => {
 
     const handler = new MarkItemConsumedHandler(mockEventStore);
 
-    await expect(handler.handle(cmd)).rejects.toThrow('Item not found');
+    await expect(handler.handle(cmd, ctx)).rejects.toThrow('Item not found');
     expect(mockEventStore.append).not.toHaveBeenCalled();
   });
 
@@ -70,7 +78,7 @@ describe('MarkItemConsumedHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new MarkItemConsumedHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(mockEventStore.getEvents).toHaveBeenCalledWith('item-1');
     expect(mockEventStore.append).toHaveBeenCalledOnce();
@@ -126,7 +134,7 @@ describe('MarkItemConsumedHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new MarkItemConsumedHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);

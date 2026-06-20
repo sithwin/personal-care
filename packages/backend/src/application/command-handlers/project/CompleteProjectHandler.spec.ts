@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { CompleteProjectHandler } from './CompleteProjectHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { CompleteProjectCommand } from '../../../domain/project/commands/CompleteProjectCommand';
 import type { StoredEvent } from '../../../types';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function makeProjectCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -16,6 +17,13 @@ function makeProjectCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEv
     ...overrides,
   };
 }
+
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('CompleteProjectHandler', () => {
   it('throws "Project not found" when getEvents resolves empty history', async () => {
@@ -34,7 +42,7 @@ describe('CompleteProjectHandler', () => {
 
     const handler = new CompleteProjectHandler(mockEventStore);
 
-    await expect(handler.handle(cmd)).rejects.toThrow('Project not found');
+    await expect(handler.handle(cmd, ctx)).rejects.toThrow('Project not found');
     expect(mockEventStore.append).not.toHaveBeenCalled();
   });
 
@@ -67,7 +75,7 @@ describe('CompleteProjectHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new CompleteProjectHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(mockEventStore.getEvents).toHaveBeenCalledWith('p-1');
     expect(mockEventStore.append).toHaveBeenCalledOnce();
@@ -114,7 +122,7 @@ describe('CompleteProjectHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new CompleteProjectHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);

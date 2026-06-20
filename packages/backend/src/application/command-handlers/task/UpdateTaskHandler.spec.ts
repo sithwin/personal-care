@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { UpdateTaskHandler } from './UpdateTaskHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { UpdateTaskCommand } from '../../../domain/task/commands/UpdateTaskCommand';
 import type { StoredEvent } from '../../../types';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -17,6 +18,13 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   };
 }
 
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
+
 describe('UpdateTaskHandler', () => {
   it('throws Task not found when getEvents resolves empty history', async () => {
     const cmd: UpdateTaskCommand = {
@@ -29,7 +37,7 @@ describe('UpdateTaskHandler', () => {
       getAllEventsSince: vi.fn(),
     } as unknown as IEventStore;
 
-    await expect(new UpdateTaskHandler(mockStore).handle(cmd)).rejects.toThrow('Task not found');
+    await expect(new UpdateTaskHandler(mockStore).handle(cmd, ctx)).rejects.toThrow('Task not found');
     expect(mockStore.append).not.toHaveBeenCalled();
   });
 
@@ -50,7 +58,7 @@ describe('UpdateTaskHandler', () => {
       getAllEventsSince: vi.fn(),
     } as unknown as IEventStore;
 
-    const result = await new UpdateTaskHandler(mockStore).handle(cmd);
+    const result = await new UpdateTaskHandler(mockStore).handle(cmd, ctx);
 
     expect(mockStore.getEvents).toHaveBeenCalledWith('task-1');
     const [events, version] = vi.mocked(mockStore.append).mock.calls[0]!;

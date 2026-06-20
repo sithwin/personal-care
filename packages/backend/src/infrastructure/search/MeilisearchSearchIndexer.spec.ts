@@ -1,28 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockAddDocuments = vi.fn().mockResolvedValue({ taskUid: 1 });
-const mockUpdateDocuments = vi.fn().mockResolvedValue({ taskUid: 2 });
-const mockDeleteDocument = vi.fn().mockResolvedValue({});
-const mockUpdateSettings = vi.fn().mockResolvedValue({ taskUid: 3 });
-const mockGetStats = vi.fn().mockResolvedValue({ numberOfDocuments: 0 });
-const mockWaitForTask = vi.fn().mockResolvedValue({ status: 'succeeded' });
-const mockCreateIndex = vi.fn().mockResolvedValue({ taskUid: 0 });
-const mockIndex = vi.fn().mockReturnValue({
-  addDocuments: mockAddDocuments,
-  updateDocuments: mockUpdateDocuments,
-  deleteDocument: mockDeleteDocument,
-  updateSettings: mockUpdateSettings,
-  getStats: mockGetStats,
-});
+const mockAddDocuments = vi.fn();
+const mockUpdateDocuments = vi.fn();
+const mockDeleteDocument = vi.fn();
+const mockUpdateSettings = vi.fn();
+const mockGetStats = vi.fn();
+const mockWaitForTask = vi.fn();
+const mockCreateIndex = vi.fn();
+const mockIndex = vi.fn();
 
 vi.mock('meilisearch', () => ({
-  Meilisearch: vi.fn().mockImplementation(() => ({
-    index: mockIndex,
-    createIndex: mockCreateIndex,
-    tasks: { waitForTask: mockWaitForTask },
-  })),
+  Meilisearch: vi.fn(),
 }));
 
+import { Meilisearch } from 'meilisearch';
 import { MeilisearchSearchIndexer } from './MeilisearchSearchIndexer';
 import type { SearchDocument } from '../../application/ports/ISearchIndexer';
 
@@ -40,13 +31,25 @@ describe('MeilisearchSearchIndexer', () => {
   let indexer: MeilisearchSearchIndexer;
 
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAddDocuments.mockResolvedValue({ taskUid: 1 });
     mockUpdateDocuments.mockResolvedValue({ taskUid: 2 });
+    mockDeleteDocument.mockResolvedValue({});
     mockUpdateSettings.mockResolvedValue({ taskUid: 3 });
-    mockCreateIndex.mockResolvedValue({ taskUid: 0 });
-    mockWaitForTask.mockResolvedValue({ status: 'succeeded' });
     mockGetStats.mockResolvedValue({ numberOfDocuments: 0 });
+    mockWaitForTask.mockResolvedValue({ status: 'succeeded' });
+    mockCreateIndex.mockResolvedValue({ taskUid: 0 });
+    mockIndex.mockReturnValue({
+      addDocuments: mockAddDocuments,
+      updateDocuments: mockUpdateDocuments,
+      deleteDocument: mockDeleteDocument,
+      updateSettings: mockUpdateSettings,
+      getStats: mockGetStats,
+    });
+    vi.mocked(Meilisearch).mockImplementation(() => ({
+      index: mockIndex,
+      createIndex: mockCreateIndex,
+      tasks: { waitForTask: mockWaitForTask },
+    }) as unknown as Meilisearch);
     indexer = new MeilisearchSearchIndexer('http://localhost:7700', 'test_key');
   });
 

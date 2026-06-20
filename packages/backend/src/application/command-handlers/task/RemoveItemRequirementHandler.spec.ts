@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { RemoveItemRequirementHandler } from './RemoveItemRequirementHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { RemoveItemRequirementCommand } from '../../../domain/task/commands/RemoveItemRequirementCommand';
 import type { StoredEvent } from '../../../types';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -17,6 +18,13 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   };
 }
 
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
+
 describe('RemoveItemRequirementHandler', () => {
   it('throws Task not found when getEvents resolves empty history', async () => {
     const cmd: RemoveItemRequirementCommand = {
@@ -29,7 +37,7 @@ describe('RemoveItemRequirementHandler', () => {
       getAllEventsSince: vi.fn(),
     } as unknown as IEventStore;
 
-    await expect(new RemoveItemRequirementHandler(mockEventStore).handle(cmd))
+    await expect(new RemoveItemRequirementHandler(mockEventStore).handle(cmd, ctx))
       .rejects.toThrow('Task not found');
     expect(mockEventStore.append).not.toHaveBeenCalled();
   });
@@ -52,7 +60,7 @@ describe('RemoveItemRequirementHandler', () => {
       getAllEventsSince: vi.fn(),
     } as unknown as IEventStore;
 
-    const result = await new RemoveItemRequirementHandler(mockEventStore).handle(cmd);
+    const result = await new RemoveItemRequirementHandler(mockEventStore).handle(cmd, ctx);
 
     expect(mockEventStore.getEvents).toHaveBeenCalledWith('task-1');
     const [events, expectedVersion] = vi.mocked(mockEventStore.append).mock.calls[0]!;

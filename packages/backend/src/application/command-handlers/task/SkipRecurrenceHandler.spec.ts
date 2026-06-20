@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { SkipRecurrenceHandler } from './SkipRecurrenceHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { SkipRecurrenceCommand } from '../../../domain/task/commands/SkipRecurrenceCommand';
 import type { StoredEvent } from '../../../types';
+import type { RequestContext } from '../../ports/RequestContext';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
@@ -16,6 +17,13 @@ function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
     ...overrides,
   };
 }
+
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('SkipRecurrenceHandler', () => {
   it('throws Task not found when getEvents resolves empty history', async () => {
@@ -34,7 +42,7 @@ describe('SkipRecurrenceHandler', () => {
 
     const handler = new SkipRecurrenceHandler(mockEventStore);
 
-    await expect(handler.handle(cmd)).rejects.toThrow('Task not found');
+    await expect(handler.handle(cmd, ctx)).rejects.toThrow('Task not found');
     expect(mockEventStore.append).not.toHaveBeenCalled();
   });
 
@@ -78,7 +86,7 @@ describe('SkipRecurrenceHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new SkipRecurrenceHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(mockEventStore.getEvents).toHaveBeenCalledWith('task-1');
     expect(mockEventStore.append).toHaveBeenCalledOnce();
@@ -137,7 +145,7 @@ describe('SkipRecurrenceHandler', () => {
     } as unknown as IEventStore;
 
     const handler = new SkipRecurrenceHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);
