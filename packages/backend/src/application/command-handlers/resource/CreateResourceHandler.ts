@@ -8,10 +8,10 @@ export class CreateResourceHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
   async handle(cmd: CreateResourceCommand, ctx: RequestContext): Promise<StoredEvent[]> {
-    ctx.log.info({ logEvent: 'createResource.handle', payload: { id: cmd.payload.id } });
+    ctx.log.info({ logEvent: 'createResource.handle' });
     const event = Resource.create(cmd);
     const stored = await this.eventStore.append([event], 0, ctx);
-    ctx.log.info({ logEvent: 'createResource.persisted', payload: { id: cmd.payload.id } });
+    ctx.log.info({ logEvent: 'createResource.persisted', payload: { id: stored[0].aggregateId } });
     return stored;
   }
 }

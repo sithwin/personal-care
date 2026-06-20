@@ -17,14 +17,14 @@ export class Resource {
     let state: ResourceState | null = null;
     for (const event of history) {
       if (event.eventType === 'ResourceCreated') {
-        state = { id: event.payload.id as UUID };
+        state = { id: event.aggregateId as UUID };
       }
     }
     return state !== null ? new Resource(state) : null;
   }
 
   static create(cmd: CreateResourceCommand): ResourceCreated {
-    return new ResourceCreated(cmd.payload);
+    return new ResourceCreated(crypto.randomUUID() as UUID, cmd.payload);
   }
 
   update(cmd: UpdateResourceCommand): ResourceUpdated {

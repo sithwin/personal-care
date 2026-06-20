@@ -1,13 +1,12 @@
 import type { UUID, ResourceType } from '../../../types';
 
 export interface CreateResourceCommand {
-  type: 'CreateResourceCommand';
-  payload: {
-    id: UUID;
-    title: string;
-    type: ResourceType;
-    url?: string;
-    notes?: string;
-    categoryId?: UUID;
+  readonly type: 'CreateResourceCommand';
+  readonly payload: {
+    readonly title: string;
+    readonly type: ResourceType;
+    readonly url?: string;
+    readonly notes?: string;
+    readonly categoryId?: UUID;
   };
 }
