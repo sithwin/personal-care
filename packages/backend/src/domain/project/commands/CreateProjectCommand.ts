@@ -1,12 +1,11 @@
 import type { UUID } from '../../../types';
 
 export interface CreateProjectCommand {
-  type: 'CreateProjectCommand';
-  payload: {
-    id: UUID;
-    name: string;
-    categoryId: UUID;
-    description?: string;
-    dueDate?: string;
+  readonly type: 'CreateProjectCommand';
+  readonly payload: {
+    readonly name: string;
+    readonly categoryId: UUID;
+    readonly description?: string;
+    readonly dueDate?: string;
   };
 }

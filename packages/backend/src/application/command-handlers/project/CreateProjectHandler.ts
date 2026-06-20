@@ -8,10 +8,10 @@ export class CreateProjectHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
   async handle(cmd: CreateProjectCommand, ctx: RequestContext): Promise<StoredEvent[]> {
-    ctx.log.info({ logEvent: 'createProject.handle', payload: { id: cmd.payload.id } });
+    ctx.log.info({ logEvent: 'createProject.handle' });
     const event = Project.create(cmd);
     const stored = await this.eventStore.append([event], 0, ctx);
-    ctx.log.info({ logEvent: 'createProject.persisted', payload: { id: cmd.payload.id } });
+    ctx.log.info({ logEvent: 'createProject.persisted', payload: { id: stored[0].aggregateId } });
     return stored;
   }
 }

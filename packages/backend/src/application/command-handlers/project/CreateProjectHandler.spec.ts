@@ -1,79 +1,63 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CreateProjectHandler } from './CreateProjectHandler';
 import type { IEventStore } from '../../ports/IEventStore';
 import type { CreateProjectCommand } from '../../../domain/project/commands/CreateProjectCommand';
 import type { StoredEvent } from '../../../types';
-import { Project } from '../../../domain/project/Project';
+import type { RequestContext } from '../../ports/RequestContext';
+
+const TEST_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
+const ctx = {
+  requestId: 'req-1',
+  correlationId: 'corr-1',
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn() },
+} as unknown as RequestContext;
 
 describe('CreateProjectHandler', () => {
-  it('appends the event from Project.create with expectedVersion 0', async () => {
+  beforeEach(() => {
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue(TEST_UUID as ReturnType<typeof crypto.randomUUID>);
+  });
+
+  it('appends ProjectCreated with aggregateId from randomUUID and expectedVersion 0', async () => {
     const cmd: CreateProjectCommand = {
       type: 'CreateProjectCommand',
-      payload: {
-        id: 'p-1',
-        name: 'Renovate kitchen',
-        categoryId: 'cat-1',
-      },
+      payload: { name: 'Home Reno', categoryId: 'cat-1' },
     };
-
-    const event = Project.create(cmd);
-    const mockStoredEvents: StoredEvent[] = [
-      {
-        id: 1,
-        aggregateId: 'p-1',
-        aggregateType: 'project',
-        eventType: 'ProjectCreated',
-        payload: cmd.payload,
-        version: 1,
-        createdAt: new Date(),
-      },
-    ];
-
+    const mockStoredEvents: StoredEvent[] = [{
+      id: 1, aggregateId: TEST_UUID, aggregateType: 'project',
+      eventType: 'ProjectCreated', payload: cmd.payload, version: 1, createdAt: new Date(),
+    }];
     const mockEventStore = {
       append: vi.fn().mockResolvedValue(mockStoredEvents),
-      getEvents: vi.fn(),
-      getAllEventsSince: vi.fn(),
+      getEvents: vi.fn(), getAllEventsSince: vi.fn(),
     } as unknown as IEventStore;
 
     const handler = new CreateProjectHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
-    expect(mockEventStore.append).toHaveBeenCalledWith([event], 0);
+    expect(mockEventStore.append).toHaveBeenCalledWith(
+      [expect.objectContaining({ aggregateId: TEST_UUID, eventType: 'ProjectCreated' })],
+      0, ctx,
+    );
     expect(result).toBe(mockStoredEvents);
   });
 
   it('returns exactly what eventStore.append resolves to', async () => {
     const cmd: CreateProjectCommand = {
       type: 'CreateProjectCommand',
-      payload: {
-        id: 'p-2',
-        name: 'Plan vacation',
-        categoryId: 'cat-2',
-        description: 'Summer 2026',
-        dueDate: '2026-08-01',
-      },
+      payload: { name: 'Garden Overhaul', categoryId: 'cat-3' },
     };
-
-    const customStoredEvents: StoredEvent[] = [
-      {
-        id: 99,
-        aggregateId: 'p-2',
-        aggregateType: 'project',
-        eventType: 'ProjectCreated',
-        payload: cmd.payload,
-        version: 1,
-        createdAt: new Date('2026-06-16'),
-      },
-    ];
-
+    const customStoredEvents: StoredEvent[] = [{
+      id: 99, aggregateId: TEST_UUID, aggregateType: 'project',
+      eventType: 'ProjectCreated', payload: cmd.payload, version: 1, createdAt: new Date('2026-06-20'),
+    }];
     const mockEventStore = {
       append: vi.fn().mockResolvedValue(customStoredEvents),
-      getEvents: vi.fn(),
-      getAllEventsSince: vi.fn(),
+      getEvents: vi.fn(), getAllEventsSince: vi.fn(),
     } as unknown as IEventStore;
 
     const handler = new CreateProjectHandler(mockEventStore);
-    const result = await handler.handle(cmd);
+    const result = await handler.handle(cmd, ctx);
 
     expect(result).toStrictEqual(customStoredEvents);
     expect(result[0].id).toBe(99);

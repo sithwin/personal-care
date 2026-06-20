@@ -38,7 +38,7 @@ export class Project {
       const p = event.payload;
       if (event.eventType === 'ProjectCreated') {
         state = {
-          id: p.id as UUID,
+          id: event.aggregateId as UUID,
           name: p.name as string,
           status: 'draft',
           taskIds: [],
@@ -76,7 +76,7 @@ export class Project {
   }
 
   static create(cmd: CreateProjectCommand): ProjectCreated {
-    return new ProjectCreated(cmd.payload);
+    return new ProjectCreated(crypto.randomUUID() as UUID, cmd.payload);
   }
 
   addTask(cmd: AddTaskToProjectCommand): TaskAddedToProject {
