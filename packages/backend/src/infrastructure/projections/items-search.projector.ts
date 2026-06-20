@@ -10,28 +10,28 @@ export function createItemsSearchProjector(indexer: ISearchIndexer): Projector {
       const p = event.payload as Record<string, unknown>;
       switch (event.eventType) {
         case 'ItemCreated':
-          log.info({ id: p.id, name: p.name }, '[4a] Sending ItemCreated to Meilisearch');
+          log.info({ id: event.aggregateId, name: p.name }, '[4a] Sending ItemCreated to Meilisearch');
           await indexer.upsert({
-            id: `item-${p.id as string}`,
-            entityId: p.id as string,
+            id: `item-${event.aggregateId}`,
+            entityId: event.aggregateId,
             type: 'item',
             name: p.name as string,
             description: (p.description as string | undefined) ?? null,
             status: 'to_buy',
             categoryId: p.categoryId as string,
           });
-          log.info({ id: p.id }, '[4b] Item indexed in Meilisearch');
+          log.info({ id: event.aggregateId }, '[4b] Item indexed in Meilisearch');
           break;
         case 'ItemMarkedAvailable':
         case 'ItemMarkedAvailableAgain':
-          log.info({ id: p.id }, '[4a] Sending item status → available to Meilisearch');
-          await indexer.patch(`item-${p.id as string}`, { status: 'available' });
-          log.info({ id: p.id }, '[4b] Item status → available indexed');
+          log.info({ id: event.aggregateId }, '[4a] Sending item status → available to Meilisearch');
+          await indexer.patch(`item-${event.aggregateId}`, { status: 'available' });
+          log.info({ id: event.aggregateId }, '[4b] Item status → available indexed');
           break;
         case 'ItemMarkedConsumed':
-          log.info({ id: p.id }, '[4a] Sending item status → consumed to Meilisearch');
-          await indexer.patch(`item-${p.id as string}`, { status: 'consumed' });
-          log.info({ id: p.id }, '[4b] Item status → consumed indexed');
+          log.info({ id: event.aggregateId }, '[4a] Sending item status → consumed to Meilisearch');
+          await indexer.patch(`item-${event.aggregateId}`, { status: 'consumed' });
+          log.info({ id: event.aggregateId }, '[4b] Item status → consumed indexed');
           break;
         default:
           break;

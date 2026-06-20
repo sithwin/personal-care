@@ -27,7 +27,7 @@ export function createItemsProjector(
     switch (event.eventType) {
       case 'ItemCreated':
         await itemRepo.insert({
-          id: p.id as string,
+          id: event.aggregateId,
           name: p.name as string,
           description: (p.description as string | undefined) ?? null,
           categoryId: p.categoryId as string,
@@ -38,18 +38,18 @@ export function createItemsProjector(
         break;
 
       case 'ItemMarkedAvailable':
-        await itemRepo.updateStatus(p.id as string, 'available');
-        await cascadeItemStatusToTasks(p.id as string, 'available', taskRepo);
+        await itemRepo.updateStatus(event.aggregateId, 'available');
+        await cascadeItemStatusToTasks(event.aggregateId, 'available', taskRepo);
         break;
 
       case 'ItemMarkedAvailableAgain':
-        await itemRepo.updateStatus(p.id as string, 'available');
-        await cascadeItemStatusToTasks(p.id as string, 'available', taskRepo);
+        await itemRepo.updateStatus(event.aggregateId, 'available');
+        await cascadeItemStatusToTasks(event.aggregateId, 'available', taskRepo);
         break;
 
       case 'ItemMarkedConsumed':
-        await itemRepo.updateStatus(p.id as string, 'consumed');
-        await cascadeItemStatusToTasks(p.id as string, 'consumed', taskRepo);
+        await itemRepo.updateStatus(event.aggregateId, 'consumed');
+        await cascadeItemStatusToTasks(event.aggregateId, 'consumed', taskRepo);
         break;
 
       default:

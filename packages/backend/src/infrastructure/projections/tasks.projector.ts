@@ -17,7 +17,7 @@ export function createTasksProjector(taskRepo: ITaskViewRepository, itemRepo: II
       case 'TaskCreated': {
         const dur = p.estimatedDuration as { value: number; unit: string } | undefined;
         await taskRepo.insert({
-          id: p.id as string,
+          id: event.aggregateId,
           name: p.name as string,
           description: (p.description as string | undefined) ?? null,
           categoryId: p.categoryId as string,
@@ -26,60 +26,60 @@ export function createTasksProjector(taskRepo: ITaskViewRepository, itemRepo: II
           estimatedDurationValue: dur?.value ?? null,
           estimatedDurationUnit: dur?.unit ?? null,
         });
-        await refreshTaskStatus(p.id as string, taskRepo);
+        await refreshTaskStatus(event.aggregateId, taskRepo);
         break;
       }
 
       case 'TaskStarted':
-        await taskRepo.markStarted(p.id as string);
-        await refreshTaskStatus(p.id as string, taskRepo);
+        await taskRepo.markStarted(event.aggregateId);
+        await refreshTaskStatus(event.aggregateId, taskRepo);
         break;
 
       case 'TaskCompleted':
-        await taskRepo.markCompleted(p.id as string);
-        await refreshTaskStatus(p.id as string, taskRepo);
+        await taskRepo.markCompleted(event.aggregateId);
+        await refreshTaskStatus(event.aggregateId, taskRepo);
         break;
 
       case 'TaskRescheduled':
-        await taskRepo.reschedule(p.id as string, p.nextDueDate as string);
-        await refreshTaskStatus(p.id as string, taskRepo);
+        await taskRepo.reschedule(event.aggregateId, p.nextDueDate as string);
+        await refreshTaskStatus(event.aggregateId, taskRepo);
         break;
 
       case 'ItemRequirementAdded': {
         const itemStatus = (await itemRepo.findStatus(p.itemId as string)) ?? 'to_buy';
         await taskRepo.insertItemRequirement(
-          p.taskId as string, p.itemId as string, p.consumable as boolean, itemStatus
+          event.aggregateId, p.itemId as string, p.consumable as boolean, itemStatus
         );
-        await refreshTaskStatus(p.taskId as string, taskRepo);
+        await refreshTaskStatus(event.aggregateId, taskRepo);
         break;
       }
 
       case 'ItemRequirementRemoved':
-        await taskRepo.deleteItemRequirement(p.taskId as string, p.itemId as string);
-        await refreshTaskStatus(p.taskId as string, taskRepo);
+        await taskRepo.deleteItemRequirement(event.aggregateId, p.itemId as string);
+        await refreshTaskStatus(event.aggregateId, taskRepo);
         break;
 
       case 'TaskScheduled':
-        await taskRepo.setSchedule(p.id as string, p.scheduledDate as string, p.scheduledStartTime as string);
+        await taskRepo.setSchedule(event.aggregateId, p.scheduledDate as string, p.scheduledStartTime as string);
         break;
 
       case 'TaskRecurrenceSet':
-        await taskRepo.setRecurrence(p.id as string, p.recurrenceRule, (p.dueDate as string | undefined) ?? null);
-        await refreshTaskStatus(p.id as string, taskRepo);
+        await taskRepo.setRecurrence(event.aggregateId, p.recurrenceRule, (p.dueDate as string | undefined) ?? null);
+        await refreshTaskStatus(event.aggregateId, taskRepo);
         break;
 
       case 'RecurrenceSkipped':
-        await taskRepo.setDueDate(p.id as string, p.nextDueDate as string);
-        await refreshTaskStatus(p.id as string, taskRepo);
+        await taskRepo.setDueDate(event.aggregateId, p.nextDueDate as string);
+        await refreshTaskStatus(event.aggregateId, taskRepo);
         break;
 
       case 'TaskPromotedToProject':
-        await taskRepo.setProjectId(p.taskId as string, p.projectId as string);
+        await taskRepo.setProjectId(event.aggregateId, p.projectId as string);
         break;
 
       case 'TaskUpdated': {
         const dur = p.estimatedDuration as { value: number; unit: string } | undefined;
-        await taskRepo.updateFields(p.id as string, {
+        await taskRepo.updateFields(event.aggregateId, {
           name: (p.name as string | undefined) ?? null,
           categoryId: (p.categoryId as string | undefined) ?? null,
           description: (p.description as string | undefined) ?? null,

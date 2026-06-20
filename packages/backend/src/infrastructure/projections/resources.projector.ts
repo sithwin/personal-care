@@ -7,7 +7,7 @@ export function createResourcesProjector(resourceRepo: IResourceViewRepository):
     switch (event.eventType) {
       case 'ResourceCreated':
         await resourceRepo.insert({
-          id: p.id as string,
+          id: event.aggregateId,
           title: p.title as string,
           type: p.type as string,
           url: (p.url as string | undefined) ?? null,
@@ -17,7 +17,7 @@ export function createResourcesProjector(resourceRepo: IResourceViewRepository):
         break;
 
       case 'ResourceUpdated':
-        await resourceRepo.update(p.id as string, {
+        await resourceRepo.update(event.aggregateId, {
           title: (p.title as string | undefined) ?? null,
           url: (p.url as string | undefined) ?? null,
           notes: (p.notes as string | undefined) ?? null,
@@ -25,20 +25,20 @@ export function createResourcesProjector(resourceRepo: IResourceViewRepository):
         break;
 
       case 'ResourceDeleted':
-        await resourceRepo.delete(p.id as string);
+        await resourceRepo.delete(event.aggregateId);
         break;
 
       case 'ResourceAttachedToTask': {
         const resource = await resourceRepo.findTitleAndType(p.resourceId as string);
         if (!resource) break;
-        await resourceRepo.insertTaskResource(p.taskId as string, p.resourceId as string, resource.title, resource.type);
-        await resourceRepo.appendTaskId(p.resourceId as string, p.taskId as string);
+        await resourceRepo.insertTaskResource(event.aggregateId, p.resourceId as string, resource.title, resource.type);
+        await resourceRepo.appendTaskId(p.resourceId as string, event.aggregateId);
         break;
       }
 
       case 'ResourceDetachedFromTask':
-        await resourceRepo.deleteTaskResource(p.taskId as string, p.resourceId as string);
-        await resourceRepo.removeTaskId(p.resourceId as string, p.taskId as string);
+        await resourceRepo.deleteTaskResource(event.aggregateId, p.resourceId as string);
+        await resourceRepo.removeTaskId(p.resourceId as string, event.aggregateId);
         break;
 
       default:

@@ -7,7 +7,7 @@ export function createCategoriesProjector(categoryRepo: ICategoryViewRepository)
     switch (event.eventType) {
       case 'CategoryCreated':
         await categoryRepo.insert({
-          id: p.id as string,
+          id: event.aggregateId,
           name: p.name as string,
           icon: (p.icon as string | undefined) ?? '📂',
           color: (p.color as string | undefined) ?? '#6b7280',
@@ -16,7 +16,7 @@ export function createCategoriesProjector(categoryRepo: ICategoryViewRepository)
         break;
 
       case 'CategoryUpdated':
-        await categoryRepo.update(p.id as string, {
+        await categoryRepo.update(event.aggregateId, {
           name: (p.name as string | undefined) ?? null,
           icon: (p.icon as string | undefined) ?? null,
           color: (p.color as string | undefined) ?? null,
@@ -24,7 +24,7 @@ export function createCategoriesProjector(categoryRepo: ICategoryViewRepository)
         break;
 
       case 'CategoryDeleted':
-        await categoryRepo.markDeleted(p.id as string);
+        await categoryRepo.markDeleted(event.aggregateId);
         break;
 
       case 'TaskCreated':

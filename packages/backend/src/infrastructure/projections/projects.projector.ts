@@ -7,7 +7,7 @@ export function createProjectsProjector(projectRepo: IProjectViewRepository): Pr
     switch (event.eventType) {
       case 'ProjectCreated':
         await projectRepo.insert({
-          id: p.id as string,
+          id: event.aggregateId,
           name: p.name as string,
           description: (p.description as string | undefined) ?? null,
           categoryId: p.categoryId as string,
@@ -16,25 +16,25 @@ export function createProjectsProjector(projectRepo: IProjectViewRepository): Pr
         break;
       case 'TaskAddedToProject':
       case 'TaskPromotedToProject':
-        await projectRepo.appendTask(p.projectId as string, p.taskId as string);
+        await projectRepo.appendTask(event.aggregateId, p.taskId as string);
         break;
       case 'ProjectCompleted':
-        await projectRepo.markCompleted(p.id as string);
+        await projectRepo.markCompleted(event.aggregateId);
         break;
       case 'ProjectPlanned':
-        await projectRepo.plan(p.id as string, p.startDate as string, p.endDate as string);
+        await projectRepo.plan(event.aggregateId, p.startDate as string, p.endDate as string);
         break;
       case 'ProjectStarted':
-        await projectRepo.start(p.id as string, (p.endDate as string | undefined) ?? null);
+        await projectRepo.start(event.aggregateId, (p.endDate as string | undefined) ?? null);
         break;
       case 'ProjectPaused':
-        await projectRepo.pause(p.id as string);
+        await projectRepo.pause(event.aggregateId);
         break;
       case 'ProjectResumed':
-        await projectRepo.resume(p.id as string);
+        await projectRepo.resume(event.aggregateId);
         break;
       case 'ProjectUpdated':
-        await projectRepo.updateMeta(p.id as string, {
+        await projectRepo.updateMeta(event.aggregateId, {
           name: (p.name as string | undefined) ?? null,
           description: (p.description as string | undefined) ?? null,
           priority: (p.priority as string | undefined) ?? null,

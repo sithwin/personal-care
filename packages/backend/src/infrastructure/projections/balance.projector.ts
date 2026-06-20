@@ -63,7 +63,7 @@ export function createBalanceProjector(balanceRepo: IBalanceViewRepository): Pro
     switch (event.eventType) {
       case 'BalanceRuleCreated':
         await balanceRepo.insertRule({
-          id: p.id as string,
+          id: event.aggregateId,
           categoryId: p.categoryId as string,
           minimumCount: p.minimumCount as number,
           frequency: p.frequency as string,
@@ -73,7 +73,7 @@ export function createBalanceProjector(balanceRepo: IBalanceViewRepository): Pro
         break;
 
       case 'BalanceRuleUpdated':
-        await balanceRepo.updateRule(p.id as string, {
+        await balanceRepo.updateRule(event.aggregateId, {
           minimumCount: (p.minimumCount as number | undefined) ?? null,
           frequency: (p.frequency as string | undefined) ?? null,
           dayRestriction: (p.dayRestriction as string | undefined) ?? null,
@@ -82,8 +82,8 @@ export function createBalanceProjector(balanceRepo: IBalanceViewRepository): Pro
         break;
 
       case 'BalanceRuleDeleted':
-        await balanceRepo.deleteRule(p.id as string);
-        await balanceRepo.deleteStatusForRule(p.id as string);
+        await balanceRepo.deleteRule(event.aggregateId);
+        await balanceRepo.deleteStatusForRule(event.aggregateId);
         break;
 
       case 'TaskCompleted':
