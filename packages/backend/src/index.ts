@@ -7,7 +7,7 @@ import { getPool } from './db/client';
 import { runMigrations } from './db/migrate';
 import { buildDependencies } from './infrastructure/composition-root';
 import { logger } from './infrastructure/logger';
-import { makeCommandsRouter } from './api/routes/commands.router';
+import { makeBalanceRulesRouter } from './api/routes/balance-rules.router';
 import { makeTasksRouter } from './api/routes/tasks.router';
 import { makeItemsRouter } from './api/routes/items.router';
 import { makeCategoriesRouter } from './api/routes/categories.router';
@@ -55,18 +55,16 @@ async function main(): Promise<void> {
   app.use(requestContextMiddleware);
 
   // Versioned query routes
-  app.use('/api/v1/tasks',      makeTasksRouter(deps.taskQueryService));
-  app.use('/api/v1/items',      makeItemsRouter(deps.itemQueryService));
-  app.use('/api/v1/categories', makeCategoriesRouter(deps.categoryQueryService));
-  app.use('/api/v1/projects',   makeProjectsRouter(deps.projectQueryService));
-  app.use('/api/v1/resources',  makeResourcesRouter(deps.resourceQueryService));
-  app.use('/api/v1/balance',    makeBalanceRouter(deps.balanceQueryService));
-  app.use('/api/v1/dashboard',  makeDashboardRouter(deps.dashboardQueryService));
-  app.use('/api/v1/suggest',    makeSuggestRouter(deps.suggestQueryService));
-  app.use('/api/v1/search',    makeSearchRouter(deps.searchQueryService));
-
-  // Internal / infrastructure routes — no version prefix
-  app.use('/commands', makeCommandsRouter(deps.commandBus));
+  app.use('/api/v1/tasks',         makeTasksRouter(deps.taskQueryService, deps.commandBus));
+  app.use('/api/v1/items',         makeItemsRouter(deps.itemQueryService, deps.commandBus));
+  app.use('/api/v1/categories',    makeCategoriesRouter(deps.categoryQueryService, deps.commandBus));
+  app.use('/api/v1/projects',      makeProjectsRouter(deps.projectQueryService, deps.commandBus));
+  app.use('/api/v1/resources',     makeResourcesRouter(deps.resourceQueryService, deps.commandBus));
+  app.use('/api/v1/balance-rules', makeBalanceRulesRouter(deps.commandBus));
+  app.use('/api/v1/balance',       makeBalanceRouter(deps.balanceQueryService));
+  app.use('/api/v1/dashboard',     makeDashboardRouter(deps.dashboardQueryService));
+  app.use('/api/v1/suggest',       makeSuggestRouter(deps.suggestQueryService));
+  app.use('/api/v1/search',        makeSearchRouter(deps.searchQueryService));
   app.get('/health', (_req, res) => {
     res.json({ ok: true, uptime: process.uptime(), timestamp: new Date().toISOString() });
   });
