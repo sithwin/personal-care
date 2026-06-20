@@ -24,7 +24,7 @@ export class BalanceRule {
       const payload = event.payload;
       if (event.eventType === 'BalanceRuleCreated') {
         state = {
-          id: payload.id as UUID,
+          id: event.aggregateId as UUID,
           categoryId: payload.categoryId as UUID,
           minimumCount: payload.minimumCount as number,
           frequency: payload.frequency as BalanceFrequency,
@@ -46,7 +46,7 @@ export class BalanceRule {
   }
 
   static create(cmd: CreateBalanceRuleCommand): BalanceRuleCreated {
-    return new BalanceRuleCreated(cmd.payload);
+    return new BalanceRuleCreated(crypto.randomUUID() as UUID, cmd.payload);
   }
 
   update(cmd: UpdateBalanceRuleCommand): BalanceRuleUpdated {

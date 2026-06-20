@@ -1,14 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { BalanceRule } from './BalanceRule';
 import type { StoredEvent } from '../../types';
+
+const TEST_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
 function makeCreatedEvent(overrides: Partial<StoredEvent> = {}): StoredEvent {
   return {
     id: 1,
     aggregateId: 'br-1',
-    aggregateType: 'balance_rule',
+    aggregateType: 'balance-rule',
     eventType: 'BalanceRuleCreated',
-    payload: { id: 'br-1', categoryId: 'cat-1', minimumCount: 2, frequency: 'weekly', dayRestriction: null },
+    payload: { categoryId: 'cat-1', minimumCount: 2, frequency: 'weekly', dayRestriction: null },
     version: 1,
     createdAt: new Date(),
     ...overrides,
@@ -33,15 +35,13 @@ describe('BalanceRule', () => {
   });
 
   describe('create', () => {
-    it('emits BalanceRuleCreated with correct eventType and aggregateId', () => {
-      const cmd = {
-        type: 'CreateBalanceRuleCommand' as const,
-        payload: { id: 'br-1', categoryId: 'cat-1', minimumCount: 2, frequency: 'weekly' as const, dayRestriction: null },
-      };
+    it('emits BalanceRuleCreated with aggregateId from randomUUID', () => {
+      vi.spyOn(crypto, 'randomUUID').mockReturnValue(TEST_UUID as ReturnType<typeof crypto.randomUUID>);
+      const cmd = { type: 'CreateBalanceRuleCommand' as const, payload: { categoryId: 'cat-1', minimumCount: 2, frequency: 'weekly' as const, dayRestriction: null } };
       const event = BalanceRule.create(cmd);
       expect(event.eventType).toBe('BalanceRuleCreated');
-      expect(event.aggregateId).toBe('br-1');
-      expect(event.aggregateType).toBe('balance_rule');
+      expect(event.aggregateId).toBe(TEST_UUID);
+      expect(event.payload).toEqual({ categoryId: 'cat-1', minimumCount: 2, frequency: 'weekly', dayRestriction: null });
     });
   });
 

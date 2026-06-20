@@ -8,10 +8,10 @@ export class CreateBalanceRuleHandler {
   constructor(private readonly eventStore: IEventStore) {}
 
   async handle(cmd: CreateBalanceRuleCommand, ctx: RequestContext): Promise<StoredEvent[]> {
-    ctx.log.info({ logEvent: 'createBalanceRule.handle', payload: { id: cmd.payload.id } });
+    ctx.log.info({ logEvent: 'createBalanceRule.handle' });
     const event = BalanceRule.create(cmd);
     const stored = await this.eventStore.append([event], 0, ctx);
-    ctx.log.info({ logEvent: 'createBalanceRule.persisted', payload: { id: cmd.payload.id } });
+    ctx.log.info({ logEvent: 'createBalanceRule.persisted', payload: { id: stored[0].aggregateId } });
     return stored;
   }
 }
