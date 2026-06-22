@@ -46,6 +46,7 @@ describe('Tasks projector', () => {
     await tasksProjector({ id: 3, aggregateId: TASK_ID, aggregateType: 'task', eventType: 'TaskRescheduled', payload: { id: TASK_ID, nextDueDate }, version: 3, createdAt: new Date() });
     expect(taskRepo.getTaskStatus(TASK_ID)).toBe('planned');
     expect(taskRepo.getTask(TASK_ID)?.completionCount).toBe(1);
+    expect(taskRepo.getTask(TASK_ID)?.dueDate).toBe(nextDueDate);
   });
 
   it('ItemRequirementAdded inserts into task_items_view and sets task to pending', async () => {

@@ -35,6 +35,7 @@ export class InMemoryTaskViewRepository implements ITaskViewRepository {
   private readonly taskItems = new Map<string, TaskItemRecord[]>();
 
   async insert(data: InsertTaskData): Promise<void> {
+    if (this.tasks.has(data.id)) return;
     this.tasks.set(data.id, {
       id: data.id,
       name: data.name,
