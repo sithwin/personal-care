@@ -1,8 +1,13 @@
-name: Build and Push Docker Images
+name: Build and Push Backend
 
 on:
   push:
     branches: [master]
+    paths:
+      - packages/backend/**
+      - package.json
+      - package-lock.json
+      - .dockerignore
 
 jobs:
   build-and-push:
@@ -33,16 +38,5 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/personal-care-backend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push frontend
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: packages/frontend/Dockerfile
-          platforms: linux/arm64
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/personal-care-frontend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
