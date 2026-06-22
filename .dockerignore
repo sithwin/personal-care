@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/.git
+**/coverage
+**/*.log
+.husky
+docs
+*.md
+packages/*/src/**/*.spec.ts

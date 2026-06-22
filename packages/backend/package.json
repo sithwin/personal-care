@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "node --env-file=.env --require ts-node/register src/index.ts",
+    "build": "tsc",
     "test": "vitest run --fileParallelism=false",
     "migrate": "node --env-file=.env --require ts-node/register src/db/migrate.ts",
     "rebuild-projections": "node --env-file=.env --require ts-node/register src/scripts/rebuild-projections.ts",
