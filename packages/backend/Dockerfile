@@ -1,5 +1,5 @@
 # ── Build stage ──────────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 # Copy workspace manifests first for layer-cache efficiency
@@ -23,7 +23,7 @@ RUN npm run build --workspace=packages/backend
 RUN cp -r /app/packages/backend/src/db/migrations /app/packages/backend/dist/db/migrations
 
 # ── Runtime stage ─────────────────────────────────────────────────────────────
-FROM node:20-alpine
+FROM node:24-alpine
 WORKDIR /app
 
 COPY package.json package-lock.json ./
