@@ -56,12 +56,14 @@ export class InMemoryTaskViewRepository implements ITaskViewRepository {
 
   async markStarted(id: string): Promise<void> {
     const task = this.tasks.get(id);
-    if (task) task.startedAt = new Date();
+    if (!task) return;
+    task.startedAt = new Date();
   }
 
   async markCompleted(id: string): Promise<void> {
     const task = this.tasks.get(id);
-    if (task) task.completedAt = new Date();
+    if (!task) return;
+    task.completedAt = new Date();
   }
 
   async reschedule(id: string, nextDueDate: string): Promise<void> {
@@ -89,12 +91,14 @@ export class InMemoryTaskViewRepository implements ITaskViewRepository {
 
   async setDueDate(id: string, dueDate: string): Promise<void> {
     const task = this.tasks.get(id);
-    if (task) task.dueDate = dueDate;
+    if (!task) return;
+    task.dueDate = dueDate;
   }
 
   async setProjectId(id: string, projectId: string): Promise<void> {
     const task = this.tasks.get(id);
-    if (task) task.projectId = projectId;
+    if (!task) return;
+    task.projectId = projectId;
   }
 
   async updateFields(id: string, data: UpdateTaskData): Promise<void> {
@@ -110,7 +114,8 @@ export class InMemoryTaskViewRepository implements ITaskViewRepository {
 
   async updateStatus(id: string, status: string): Promise<void> {
     const task = this.tasks.get(id);
-    if (task) task.status = status;
+    if (!task) return;
+    task.status = status;
   }
 
   async findById(id: string): Promise<TaskViewRow | null> {
@@ -137,7 +142,8 @@ export class InMemoryTaskViewRepository implements ITaskViewRepository {
   }
 
   async deleteItemRequirement(taskId: string, itemId: string): Promise<void> {
-    const items = this.taskItems.get(taskId) ?? [];
+    const items = this.taskItems.get(taskId);
+    if (!items) return;
     this.taskItems.set(taskId, items.filter(r => r.itemId !== itemId));
   }
 
