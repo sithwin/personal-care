@@ -19,6 +19,9 @@ COPY packages/backend/tsconfig.json ./packages/backend/
 # Compile TypeScript → dist/
 RUN npm run build --workspace=packages/backend
 
+# Copy SQL migration files (tsc only emits .js, not .sql)
+RUN cp -r /app/packages/backend/src/db/migrations /app/packages/backend/dist/db/migrations
+
 # ── Runtime stage ─────────────────────────────────────────────────────────────
 FROM node:20-alpine
 WORKDIR /app
